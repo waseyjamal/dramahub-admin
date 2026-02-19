@@ -47243,19 +47243,21 @@ return A.I(p.fA("token_created_at",new A.er(Date.now(),0,!1).CX()),$async$tL)
 case 3:return A.M(null,r)}})
 return A.N($async$tL,r)},
 DE(a){return this.a1g(a)},
-a1g(a){var s=0,r=A.O(t.ob),q,p=this,o,n,m
+a1g(a){var s=0,r=A.O(t.ob),q,p=this,o,n,m,l
 var $async$DE=A.P(function(b,c){if(b===1)return A.L(c,r)
-for(;;)switch(s){case 0:m=p.a.b
-m===$&&A.b()
-o=J.al(m.c,"github_token")
+for(;;)switch(s){case 0:l=p.a.b
+l===$&&A.b()
+o=J.al(l.c,"github_token")
 if(o==null){q=null
 s=1
-break}n=p.Q6(a,"dramahub_")
-m=A.aKF(16)
-q=B.a6.Jm(0,B.h.eg(A.aGX(new A.Pq(n)).aph(new A.rc(B.mY.cQ(o)),null,new A.P5(m.a))),!0)
+break}try{n=p.Q6(a,"dramahub_")
+l=A.aKF(16)
+l=B.a6.Jm(0,B.h.eg(A.aGX(new A.Pq(n)).aph(new A.rc(B.mY.cQ(o)),null,new A.P5(l.a))),!0)
+q=l
 s=1
-break
-case 1:return A.M(q,r)}})
+break}catch(k){q=null
+s=1
+break}case 1:return A.M(q,r)}})
 return A.N($async$DE,r)},
 vk(){var s=0,r=A.O(t.H),q=this,p
 var $async$vk=A.P(function(a,b){if(a===1)return A.L(b,r)
