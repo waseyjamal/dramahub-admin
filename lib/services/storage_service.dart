@@ -23,7 +23,11 @@ class StorageService {
   Future<String?> getToken(String password) async {
     final encrypted = _storage.getItem(StorageKeys.token);
     if (encrypted == null) return null;
-    return _decrypt(encrypted, password);
+    try {
+      return _decrypt(encrypted, password);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> clearToken() async {
