@@ -39,6 +39,17 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
   }
 
   @override
+  void dispose() {
+    episodeNumber.dispose();
+    title.dispose();
+    videoId.dispose();
+    thumbnailImage.dispose();
+    downloadUrl.dispose();
+    durationMinutes.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = Get.find<EpisodeController>();
     final isEdit = widget.existing != null;
@@ -55,13 +66,14 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _field(episodeNumber, 'Episode Number', true,
-                    keyboardType: TextInputType.number),
-                _field(title, 'Title (e.g. Episode 61)', true),
+                    enabled: !isEdit, keyboardType: TextInputType.number),
+                _field(title, 'Title', true),
                 _field(videoId, 'YouTube Video ID', true),
                 _field(thumbnailImage, 'Thumbnail Image URL', false),
                 _field(downloadUrl, 'Download URL', false),
                 _field(durationMinutes, 'Duration (minutes)', false,
                     keyboardType: TextInputType.number),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     const Text('Premium Episode'),
@@ -83,23 +95,32 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+          ),
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
 
+            final epNum = int.tryParse(episodeNumber.text) ?? 0;
+
             final data = {
-              'episodeNumber': int.tryParse(episodeNumber.text) ?? 0,
+              'id': widget.existing?['id'] ??
+                  '${controller.currentDramaId}_ep_$epNum',
+              'episodeNumber': epNum,
               'title': title.text.trim(),
               'videoId': videoId.text.trim(),
               'thumbnailImage': thumbnailImage.text.trim(),
               'downloadUrl': downloadUrl.text.trim(),
               'durationMinutes': int.tryParse(durationMinutes.text) ?? 0,
               'isPremium': isPremium,
-              'releaseDate': DateTime.now().toIso8601String(),
+              'releaseDate': widget.existing?['releaseDate'] ??
+                  DateTime.now().toIso8601String(),
               'dramaId': controller.currentDramaId ?? '',
             };
 
-            if (isEdit && widget.index != null) {
-              await controller.updateEpisode(widget.index!, data);
+            if (isEdit) {
+              await controller.updateEpisode(widget.index ?? 0, data);
             } else {
               await controller.addEpisode(data);
             }
@@ -117,17 +138,21 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
     String label,
     bool required, {
     TextInputType keyboardType = TextInputType.text,
+    bool enabled = true,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: ctrl,
         keyboardType: keyboardType,
+        enabled: enabled,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          filled: !enabled,
+          fillColor: enabled ? null : Colors.grey.shade100,
         ),
         validator: required
             ? (v) => v == null || v.isEmpty ? '$label is required' : null

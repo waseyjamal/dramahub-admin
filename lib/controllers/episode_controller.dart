@@ -82,7 +82,17 @@ class EpisodeController extends GetxController {
       return;
     }
 
-    episodes[index] = updated;
+    final existingIndex = episodes.indexWhere(
+      (e) => e['episodeNumber'] == updated['episodeNumber'],
+    );
+
+    final targetIndex = existingIndex != -1 ? existingIndex : index;
+    final originalId = episodes[targetIndex]['id'] ??
+        '${currentDramaId}_ep_${updated['episodeNumber']}';
+
+    updated['id'] = originalId;
+    episodes[targetIndex] = updated;
+
     _sortDescending();
     await _commit('Update episode ${updated['episodeNumber']}');
   }
@@ -100,7 +110,7 @@ class EpisodeController extends GetxController {
   }
 
   Future<void> _commit(String message) async {
-    final path = _seasonPath(currentDramaId!, currentSeason);
+    final path = 'episodes/$currentDramaId.json';
     await _repository.commitJsonList(
       path: path,
       data: episodes,
