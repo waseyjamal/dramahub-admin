@@ -127,9 +127,10 @@ class _LoginPageState extends State<LoginPage> {
                         }
 
                         if (token.isEmpty) {
-                          Get.find<AuthController>().errorMessage.value =
-                              'Could not retrieve PAT. Enter it manually.';
-                          setState(() => _showTokenField = true);
+                          setState(() {
+                            _showTokenField = true;
+                            _hasSavedToken = false;
+                          });
                           return;
                         }
 
