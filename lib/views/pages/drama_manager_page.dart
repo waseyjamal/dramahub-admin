@@ -18,7 +18,8 @@ class DramaManagerPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('Drama Manager', style: TextStyle(fontSize: 24)),
+              const Text('Drama Manager',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const Spacer(),
               ElevatedButton.icon(
                 onPressed: () => showDialog(
@@ -32,10 +33,12 @@ class DramaManagerPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           TextField(
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Search dramas...',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.search),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
             onChanged: (value) => searchQuery.value = value.toLowerCase(),
           ),
@@ -51,48 +54,87 @@ class DramaManagerPage extends StatelessWidget {
                       d['title'].toLowerCase().contains(searchQuery.value))
                   .toList();
 
+              if (filtered.isEmpty) {
+                return const Center(child: Text('No dramas found'));
+              }
+
               return ReorderableListView(
                 onReorder: (oldIndex, newIndex) {
                   controller.reorder(oldIndex, newIndex);
                 },
                 children: List.generate(filtered.length, (index) {
                   final drama = filtered[index];
+                  final isActive = drama['isActive'] ?? true;
+
                   return Card(
                     key: ValueKey(drama['id']),
+                    margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      title: Text(drama['title']),
-                      subtitle: Text(drama['id']),
+                      leading: CircleAvatar(
+                        backgroundColor: isActive ? Colors.green : Colors.grey,
+                        child: Text(
+                          drama['title'][0].toUpperCase(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      title: Text(
+                        drama['title'],
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'ID: ${drama['id']}  •  Episodes: ${drama['totalEpisodes'] ?? 0}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _statusBadge(drama['isActive'] ?? true),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (_) => DramaFormDialog(existing: drama),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isActive ? Colors.green : Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isActive ? 'Active' : 'Inactive',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 12),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.edit,
+                                color: Colors.blue, size: 20),
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (_) => DramaFormDialog(
+                                existing: drama,
+                                index: index,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              isActive
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 20,
+                              color: Colors.orange,
+                            ),
+                            onPressed: () => controller.toggleActive(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                color: Colors.red, size: 20),
                             onPressed: () async {
                               final confirm = await showConfirmDialog(
                                 context,
                                 'Delete Drama',
-                                'Are you sure you want to delete ${drama['title']}?',
+                                'Delete ${drama['title']}? This cannot be undone.',
                               );
                               if (confirm) {
                                 controller.deleteDrama(index);
                               }
                             },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              drama['isActive'] == true
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () => controller.toggleActive(index),
                           ),
                         ],
                       ),
@@ -103,20 +145,6 @@ class DramaManagerPage extends StatelessWidget {
             }),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _statusBadge(bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: active ? Colors.green : Colors.red,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        active ? 'Active' : 'Inactive',
-        style: const TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
   }
