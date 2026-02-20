@@ -14,6 +14,8 @@ class EpisodeFormDialog extends StatefulWidget {
 
 class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
   final _formKey = GlobalKey<FormState>();
+  bool isScheduled = false;
+  DateTime? scheduledDate;
   late TextEditingController episodeNumber;
   late TextEditingController title;
   late TextEditingController videoId;
@@ -25,6 +27,14 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
   @override
   void initState() {
     super.initState();
+    final existing = widget.existing;
+    if (existing != null && existing['releaseDate'] != null) {
+      final date = DateTime.parse(existing['releaseDate']);
+      if (date.isAfter(DateTime.now())) {
+        isScheduled = true;
+        scheduledDate = date;
+      }
+    }
     episodeNumber = TextEditingController(
         text: widget.existing?['episodeNumber']?.toString() ?? '');
     title = TextEditingController(text: widget.existing?['title'] ?? '');
@@ -84,6 +94,70 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('Release Type'),
+                    const Spacer(),
+                    ChoiceChip(
+                      label: const Text('Live Now'),
+                      selected: !isScheduled,
+                      onSelected: (_) => setState(() {
+                        isScheduled = false;
+                        scheduledDate = null;
+                      }),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text('Schedule'),
+                      selected: isScheduled,
+                      onSelected: (_) async {
+                        final picked = await showDateTimePicker(context);
+                        if (picked != null) {
+                          setState(() {
+                            isScheduled = true;
+                            scheduledDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                if (isScheduled && scheduledDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.deepPurple.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.schedule,
+                              color: Colors.deepPurple, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Releases: ${scheduledDate!.day}/${scheduledDate!.month}/${scheduledDate!.year} ${scheduledDate!.hour}:${scheduledDate!.minute.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                                color: Colors.deepPurple, fontSize: 13),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () async {
+                              final picked = await showDateTimePicker(context);
+                              if (picked != null) {
+                                setState(() => scheduledDate = picked);
+                              }
+                            },
+                            child: const Icon(Icons.edit,
+                                size: 14, color: Colors.deepPurple),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -114,8 +188,9 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
               'downloadUrl': downloadUrl.text.trim(),
               'durationMinutes': int.tryParse(durationMinutes.text) ?? 0,
               'isPremium': isPremium,
-              'releaseDate': widget.existing?['releaseDate'] ??
-                  DateTime.now().toIso8601String(),
+              'releaseDate': isScheduled && scheduledDate != null
+                  ? scheduledDate!.toIso8601String()
+                  : DateTime.now().toIso8601String(),
               'dramaId': controller.currentDramaId ?? '',
             };
 
@@ -159,5 +234,25 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
             : null,
       ),
     );
+  }
+
+  Future<DateTime?> showDateTimePicker(BuildContext context) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null) return null;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+        scheduledDate ?? DateTime.now(),
+      ),
+    );
+    if (time == null) return null;
+
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 }
