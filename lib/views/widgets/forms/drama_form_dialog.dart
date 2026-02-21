@@ -59,7 +59,21 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
               children: [
                 _field(id, 'ID (e.g. arafta)', isEdit ? false : true),
                 _field(title, 'Title', true),
-                _field(description, 'Description', false),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: TextFormField(
+                    controller: description,
+                    maxLines: 6,
+                    minLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+                ),
                 _field(posterImage, 'Poster Image URL', false),
                 _field(bannerImage, 'Banner Image URL', false),
                 _field(genre, 'Genre', false),
