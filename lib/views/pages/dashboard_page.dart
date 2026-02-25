@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../../controllers/drama_controller.dart';
 import '../../controllers/episode_controller.dart';
@@ -7,6 +8,13 @@ import '../../services/admin_log_service.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+
+  static Future<void> _openAnalytics() async {
+    final url = Uri.parse(
+      'https://console.firebase.google.com/project/dramahub-81508/analytics/app/android:com.dramahub.drama_hub/overview',
+    );
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +37,13 @@ class DashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Dashboard',
-                    style:
-                        TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Dashboard',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
 
-                // Health Card
+                // ─── Health Card ─────────────────────────────────────
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -82,7 +91,7 @@ class DashboardPage extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Stats Row
+                // ─── Stats Row ───────────────────────────────────────
                 Row(
                   children: [
                     _statCard('Dramas', '${dramaController.dramas.length}',
@@ -116,7 +125,87 @@ class DashboardPage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Version
+                // ─── Analytics Section ───────────────────────────────
+                const _SectionTitle(
+                  title: 'User Analytics',
+                  icon: Icons.analytics_rounded,
+                  color: Colors.deepPurple,
+                ),
+                const SizedBox(height: 12),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.deepPurple.shade600,
+                        Colors.deepPurple.shade900,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.bar_chart_rounded,
+                              color: Colors.white70, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Firebase Analytics',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'View episode views, active users, top dramas, engagement time and more — all live in Firebase Console.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _quickStat('episode_watched', 'Episodes'),
+                          const SizedBox(width: 8),
+                          _quickStat('drama_opened', 'Drama Opens'),
+                          const SizedBox(width: 8),
+                          _quickStat('screen_view', 'Screen Views'),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _openAnalytics,
+                          icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                          label: const Text('Open Firebase Analytics'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.deepPurple,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ─── Version Status ──────────────────────────────────
                 if (controller.versionStatus.value.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -137,10 +226,12 @@ class DashboardPage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Recent Admin Actions
-                const Text('Recent Actions',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                // ─── Recent Admin Actions ────────────────────────────
+                const _SectionTitle(
+                  title: 'Recent Actions',
+                  icon: Icons.history_rounded,
+                  color: Colors.orange,
+                ),
                 const SizedBox(height: 8),
                 ...logService.logs.reversed.take(5).map((log) => Container(
                       margin: const EdgeInsets.only(bottom: 6),
@@ -164,10 +255,12 @@ class DashboardPage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Recent Commits
-                const Text('Recent Commits',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                // ─── Recent Commits ──────────────────────────────────
+                const _SectionTitle(
+                  title: 'Recent Commits',
+                  icon: Icons.commit_rounded,
+                  color: Colors.grey,
+                ),
                 const SizedBox(height: 8),
                 ...controller.recentCommits.take(5).map((commit) => Container(
                       margin: const EdgeInsets.only(bottom: 6),
@@ -202,6 +295,8 @@ class DashboardPage extends StatelessWidget {
                         ],
                       ),
                     )),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -219,7 +314,7 @@ class DashboardPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -230,7 +325,7 @@ class DashboardPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -250,6 +345,70 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _quickStat(String event, String label) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Text(
+              event,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 9,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Reusable Widgets ─────────────────────────────────────────────────────────
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const _SectionTitle({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 }

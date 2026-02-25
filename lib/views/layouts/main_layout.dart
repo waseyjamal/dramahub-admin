@@ -5,6 +5,7 @@ import '../pages/drama_manager_page.dart';
 import '../pages/episode_manager_page.dart';
 import '../pages/config_page.dart';
 import '../../controllers/auth_controller.dart';
+import '../pages/ad_manager_page.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
@@ -18,6 +19,7 @@ class MainLayout extends StatelessWidget {
       const DramaManagerPage(),
       const EpisodeManagerPage(),
       const ConfigPage(),
+      const AdManagerPage(),
     ];
 
     return Obx(() => Scaffold(
@@ -83,6 +85,11 @@ class MainLayout extends StatelessWidget {
                 icon: Icon(Icons.settings_outlined),
                 activeIcon: Icon(Icons.settings),
                 label: 'Config',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.campaign_outlined),
+                activeIcon: Icon(Icons.campaign),
+                label: 'Ads',
               ),
             ],
           ),

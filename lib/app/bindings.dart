@@ -1,3 +1,4 @@
+import 'package:dramahub_admin/controllers/ad_controller.dart';
 import 'package:get/get.dart';
 
 import '../services/github_service.dart';
@@ -21,11 +22,13 @@ class AppBindings extends Bindings {
     Get.put<VersionCompatibilityService>(VersionCompatibilityService(),
         permanent: true);
     Get.put<AdminLogService>(AdminLogService(), permanent: true);
+    Get.lazyPut<AdController>(() => AdController());
 
     Get.lazyPut<AuthController>(() => AuthController());
     Get.lazyPut<DramaController>(() => DramaController());
     Get.lazyPut<EpisodeController>(() => EpisodeController());
     Get.lazyPut<ConfigController>(() => ConfigController());
+
     Get.lazyPut<DashboardController>(() => DashboardController());
     Get.lazyPut<MigrationController>(() => MigrationController());
   }

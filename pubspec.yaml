@@ -12,6 +12,11 @@ dependencies:
   # State management
   get: ^4.6.6
 
+  cloud_firestore: ^6.1.2
+  firebase_core: ^4.4.0
+
+  url_launcher: ^6.3.2
+
   # HTTP client
   dio: ^5.4.0
 

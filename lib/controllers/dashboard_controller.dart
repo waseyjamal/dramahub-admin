@@ -43,6 +43,8 @@ class DashboardController extends GetxController {
 
     _updateSystemHealth();
 
+    // Load analytics in parallel
+
     try {
       final commits = await _githubService.fetchRecentCommits();
       recentCommits.assignAll(
@@ -72,17 +74,14 @@ class DashboardController extends GetxController {
       systemHealth.value = 'CRITICAL – GitHub Offline';
       return;
     }
-
     if (_githubService.rateLimitRemaining.value < 20) {
       systemHealth.value = 'WARNING – Low API Rate Limit';
       return;
     }
-
     if (apiLatency.value > 2000) {
       systemHealth.value = 'WARNING – High API Latency';
       return;
     }
-
     systemHealth.value = 'HEALTHY';
   }
 }
