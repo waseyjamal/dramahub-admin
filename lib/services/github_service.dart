@@ -98,6 +98,36 @@ class GitHubService extends GetxService {
     }
   }
 
+  // ✅ NEW — creates a file that doesn't exist yet on GitHub
+  // Used by commitWithRetry when fetchFile returns 404
+  Future<void> createFile({
+    required String path,
+    required String content,
+    required String message,
+  }) async {
+    try {
+      final encodedContent = base64Encode(utf8.encode(content));
+      await _dio.put(
+        ApiConstants.contentsUrl(path),
+        data: {
+          'message': message,
+          'content': encodedContent,
+          'branch': ApiConstants.githubBranch,
+          // No 'sha' field — this tells GitHub to create new file
+        },
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 409) {
+        throw ConflictException();
+      }
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  // ✅ UPDATED — now handles 404 (new file) by calling createFile
+  // Previously always called fetchFile first, which threw 404 for new dramas
+  // causing episode commits to silently fail
   Future<void> commitWithRetry({
     required String path,
     required String newContent,
@@ -108,11 +138,28 @@ class GitHubService extends GetxService {
     int attempts = 0;
     while (attempts < maxAttempts) {
       try {
-        final file = await fetchFile(path);
+        // Try to fetch existing file SHA
+        GitHubFileModel? existingFile;
+        try {
+          existingFile = await fetchFile(path);
+        } on GitHubApiException catch (e) {
+          if (e.statusCode == 404) {
+            // File doesn't exist yet — create it
+            await createFile(
+              path: path,
+              content: newContent,
+              message: message,
+            );
+            return;
+          }
+          rethrow;
+        }
+
+        // File exists — update it with SHA
         await updateFile(
           path: path,
           content: newContent,
-          sha: file.sha,
+          sha: existingFile.sha,
           message: message,
         );
         return;

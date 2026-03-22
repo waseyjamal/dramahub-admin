@@ -34,6 +34,8 @@ class ConfigPage extends StatelessWidget {
                   // Hero Slider Picker always at top
                   _HeroSliderPicker(controller: controller),
 
+                  _DataVersionCard(controller: controller),
+
                   // All other config entries
                   if (otherEntries.isEmpty)
                     const Padding(
@@ -219,7 +221,10 @@ class _HeroSliderPicker extends StatelessWidget {
                                             color: Colors.grey.shade400,
                                             fontSize: 13)),
                                   ),
-                                  ...dramas
+                                  // ✅ deduplicate by id — prevents assertion error when
+                                  // same drama appears multiple times in dramas list
+                                  ...{for (var d in dramas) d['id']: d}
+                                      .values
                                       .map((drama) => DropdownMenuItem<String>(
                                             value: drama['id'],
                                             child: Text(
@@ -297,6 +302,204 @@ class _HeroSliderPicker extends StatelessWidget {
                       foregroundColor: Colors.red.shade400),
                 ),
               ],
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class _DataVersionCard extends StatelessWidget {
+  final ConfigController controller;
+
+  const _DataVersionCard({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final currentVersion =
+          int.tryParse(controller.config['data_version']?.toString() ?? '1') ??
+              1;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.orange.withValues(alpha: 0.4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.refresh_rounded, color: Colors.orange, size: 22),
+                  SizedBox(width: 8),
+                  Text(
+                    'Cache Invalidation',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Bump version after uploading new episodes or dramas. All users will fetch fresh data within 15 minutes.',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  // Current version display
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Current Version',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'v$currentVersion',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Arrow
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.grey.shade400,
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Next version display
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.green.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'After Bump',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'v${currentVersion + 1}',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Bump button
+                  Obx(() => ElevatedButton.icon(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Bump Data Version?'),
+                                    content: Text(
+                                      'Version will change from v$currentVersion → v${currentVersion + 1}.\n\nAll users will fetch fresh content within 15 minutes.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                        child: const Text('Bump'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm == true) {
+                                  await controller.updateField(
+                                    'data_version',
+                                    currentVersion + 1,
+                                  );
+                                }
+                              },
+                        icon: controller.isLoading.value
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.arrow_upward_rounded),
+                        label: Text(
+                          controller.isLoading.value
+                              ? 'Saving...'
+                              : 'Bump Version',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      )),
+                ],
+              ),
             ],
           ),
         ),
