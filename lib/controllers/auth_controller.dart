@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../services/storage_service.dart';
 import '../services/auth_service.dart';
@@ -8,39 +9,50 @@ import '../services/admin_log_service.dart';
 import '../controllers/config_controller.dart';
 import '../data/repositories/github_repository.dart';
 
-class AuthController extends GetxController {
+class AuthController extends GetxController with WidgetsBindingObserver {
   final StorageService _storage = Get.find();
   late final AuthService _authService;
   final GitHubService _githubService = Get.find();
 
   final RxBool isAuthenticated = false.obs;
   final RxString errorMessage = ''.obs;
-  final Rx<DateTime?> lastActivity = Rx<DateTime?>(null);
-
-  static const Duration sessionTimeout = Duration(minutes: 30);
-  Timer? _idleTimer;
 
   @override
   void onInit() {
     super.onInit();
     _authService = AuthService(_storage);
+
+    // Platform-specific startup logic
+    if (!kIsWeb) {
+      // Requirement 5 for Android: If onInit runs, the app was fully closed.
+      // Always require password on fresh startup.
+      _storage.clearSession();
+      _storage.clearPauseTimestamp();
+    }
+
     isAuthenticated.value = _storage.isLoggedIn();
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  void startSessionTimer() {
-    _resetTimer();
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
   }
 
-  void registerActivity() {
-    lastActivity.value = DateTime.now();
-    _resetTimer();
-  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kIsWeb) return;
 
-  void _resetTimer() {
-    _idleTimer?.cancel();
-    _idleTimer = Timer(sessionTimeout, () async {
-      await logout();
-    });
+    if (state == AppLifecycleState.detached) {
+      // Clear session flag on full close
+      _storage.clearSession();
+      _storage.clearPauseTimestamp();
+      isAuthenticated.value = false;
+    } else if (state == AppLifecycleState.paused) {
+      // Safety net: record when we were last active
+      _storage.savePauseTimestamp();
+    }
   }
 
   void checkTokenRotation() {
@@ -81,7 +93,6 @@ class AuthController extends GetxController {
     }
 
     isAuthenticated.value = true;
-    startSessionTimer();
     checkTokenRotation();
 
     try {
@@ -91,10 +102,20 @@ class AuthController extends GetxController {
     return true;
   }
 
+  /// Lock just clears the current session flag without deleting the stored PAT.
+  Future<void> lock() async {
+    await _storage.clearSession();
+    isAuthenticated.value = false;
+
+    try {
+      Get.find<AdminLogService>().record('Admin session locked');
+    } catch (_) {}
+  }
+
   Future<void> logout() async {
-    _idleTimer?.cancel();
     await _storage.clearToken();
     await _storage.clearSession();
+    await _storage.clearPauseTimestamp();
     isAuthenticated.value = false;
 
     try {
@@ -103,6 +124,7 @@ class AuthController extends GetxController {
 
     try {
       Get.find<AdminLogService>().logs.clear();
+      Get.find<AdminLogService>().record('Admin logged out');
     } catch (_) {}
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
 import '../../services/storage_service.dart';
-import '../../core/constants/storage_keys.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,15 +13,16 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _tokenController = TextEditingController();
-  bool _hasSavedToken = false;
+  bool _isPatValid = false;
   bool _showTokenField = false;
 
   @override
   void initState() {
     super.initState();
     final storage = Get.find<StorageService>();
-    final raw = storage.getItem(StorageKeys.token);
-    _hasSavedToken = raw != null && raw.toString().isNotEmpty;
+    // Check if we have a token that is NOT expired (within 10 days)
+    _isPatValid = storage.hasToken() && !storage.isTokenExpired();
+    _showTokenField = !_isPatValid;
   }
 
   @override
@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                           TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(
-                    _hasSavedToken
+                    _isPatValid && !_showTokenField
                         ? 'Enter your password to continue'
                         : 'Enter password and GitHub PAT',
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
@@ -82,9 +82,10 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10)),
                     ),
+                    onSubmitted: (_) => _handleLogin(controller, storage),
                   ),
                   const SizedBox(height: 12),
-                  if (!_hasSavedToken || _showTokenField) ...[
+                  if (_showTokenField) ...[
                     TextField(
                       controller: _tokenController,
                       decoration: InputDecoration(
@@ -93,10 +94,11 @@ class _LoginPageState extends State<LoginPage> {
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
+                      onSubmitted: (_) => _handleLogin(controller, storage),
                     ),
                     const SizedBox(height: 12),
                   ],
-                  if (_hasSavedToken && !_showTokenField)
+                  if (!_showTokenField && _isPatValid)
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -116,26 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
-                      onPressed: () async {
-                        final password = _passwordController.text;
-
-                        String token;
-                        if (_hasSavedToken && !_showTokenField) {
-                          token = await storage.getToken(password) ?? '';
-                        } else {
-                          token = _tokenController.text.trim();
-                        }
-
-                        if (token.isEmpty) {
-                          setState(() {
-                            _showTokenField = true;
-                            _hasSavedToken = false;
-                          });
-                          return;
-                        }
-
-                        await controller.login(password, token);
-                      },
+                      onPressed: () => _handleLogin(controller, storage),
                       child:
                           const Text('Login', style: TextStyle(fontSize: 16)),
                     ),
@@ -155,5 +138,42 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleLogin(
+      AuthController controller, StorageService storage) async {
+    final password = _passwordController.text;
+    if (password.isEmpty) {
+      controller.errorMessage.value = 'Password is required.';
+      return;
+    }
+
+    String? token;
+    if (!_showTokenField) {
+      // Try to retrieve existing PAT using the provided password
+      token = await storage.getToken(password);
+      if (token == null) {
+        controller.errorMessage.value = 'Invalid password.';
+        return;
+      }
+    } else {
+      token = _tokenController.text.trim();
+    }
+
+    if (token == null || token.isEmpty) {
+      controller.errorMessage.value = 'GitHub PAT is required.';
+      setState(() => _showTokenField = true);
+      return;
+    }
+
+    final success = await controller.login(password, token);
+    if (success) {
+      // Clear secondary field state for next time
+      setState(() {
+        _isPatValid = true;
+        _showTokenField = false;
+        _tokenController.clear();
+      });
+    }
   }
 }

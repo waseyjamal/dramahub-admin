@@ -50,6 +50,11 @@ class MainLayout extends StatelessWidget {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.lock_outline, color: Colors.white70),
+                onPressed: () => Get.find<AuthController>().lock(),
+                tooltip: 'Lock Session',
+              ),
+              IconButton(
                 icon: const Icon(Icons.logout, color: Colors.white70),
                 onPressed: () => Get.find<AuthController>().logout(),
                 tooltip: 'Logout',
