@@ -49170,22 +49170,23 @@ r=J.a9(r.c,"token_created_at")
 if(r==null)return
 s=A.abv(r)
 if(B.d.bb(new A.cE(Date.now(),0,!1).fP(s).a,864e8)>90)this.cx.sm(0,"GitHub PAT older than 90 days. Please rotate your token.")},
-uR(a,b){return this.aBq(a,b)},
-aBq(a,b){var s=0,r=A.L(t.y),q,p=this,o,n,m,l,k
-var $async$uR=A.M(function(c,d){if(c===1)return A.I(d,r)
+uR(a,b,c){return this.aBq(a,b,c)},
+aBq(a,b,c){var s=0,r=A.L(t.y),q,p=this,o,n,m,l,k
+var $async$uR=A.M(function(d,e){if(d===1)return A.I(e,r)
 for(;;)switch(s){case 0:k=p.ay
 k===$&&A.b()
 s=3
 return A.E(k.zu(a),$async$uR)
-case 3:if(!d){p.cx.sm(0,"Invalid password or account locked.")
+case 3:if(!e){p.cx.sm(0,"Invalid password or account locked.")
 q=!1
 s=1
-break}k=p.ax
-s=4
-return A.E(k.vM(b,a),$async$uR)
-case 4:s=5
-return A.E(k.vL(!0),$async$uR)
-case 5:k=p.ch.as.NB$
+break}s=c?4:5
+break
+case 4:s=6
+return A.E(p.ax.vM(b,a),$async$uR)
+case 6:case 5:s=7
+return A.E(p.ax.vL(!0),$async$uR)
+case 7:k=p.ch.as.NB$
 k===$&&A.b()
 k=k.b
 k===$&&A.b()
@@ -50817,7 +50818,7 @@ case 4:if(o.length===0){a.cx.sm(0,"GitHub PAT is required.")
 p.a6(new A.aCz(p))
 s=1
 break}s=7
-return A.E(a.uR(n,o),$async$pO)
+return A.E(a.uR(n,o,p.r),$async$pO)
 case 7:if(d)p.a6(new A.aCA(p))
 case 1:return A.J(q,r)}})
 return A.K($async$pO,r)}}
