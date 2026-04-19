@@ -151,13 +151,8 @@ class _LoginPageState extends State<LoginPage> {
       AuthController controller, StorageService storage) async {
     final password = _passwordController.text;
 
-    print('DEBUG 1: _showTokenField = $_showTokenField');
-    print('DEBUG 2: password entered = $password');
-    print('DEBUG 3: calling hasToken...');
     final has = await storage.hasToken();
-    print('DEBUG 4: hasToken = $has');
     final expired = await storage.isTokenExpired();
-    print('DEBUG 5: isTokenExpired = $expired');
 
     if (password.isEmpty) {
       controller.errorMessage.value = 'Password is required.';
@@ -166,12 +161,9 @@ class _LoginPageState extends State<LoginPage> {
 
     String? token;
     if (!_showTokenField) {
-      print('DEBUG 6: calling getToken...');
       token = await storage.getToken(password);
-      print('DEBUG 7: getToken result = ${token == null ? "NULL" : "SUCCESS"}');
 
       if (token == null) {
-        print('DEBUG: Decryption failed or token missing. Forcing PAT field.');
         controller.errorMessage.value = 'Invalid password or corrupted session. Please re-enter GitHub PAT.';
         setState(() {
           _showTokenField = true;
