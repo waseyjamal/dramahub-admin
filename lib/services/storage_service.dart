@@ -53,6 +53,8 @@ class StorageService {
     try {
       return _decrypt(encrypted.toString(), password);
     } catch (e) {
+      // Clear corrupted token that was encrypted with the old broken method
+      await clearToken();
       return null;
     }
   }
@@ -117,17 +119,24 @@ class StorageService {
   String _encrypt(String text, String password) {
     final keyBytes = _deriveKeyBytes(password, _saltPrefix);
     final key = enc.Key(keyBytes);
-    final iv = enc.IV.fromLength(16);
+    final iv = enc.IV.fromSecureRandom(16);
     final encrypter = enc.Encrypter(enc.AES(key));
-    return encrypter.encrypt(text, iv: iv).base64;
+    final encrypted = encrypter.encrypt(text, iv: iv);
+    // Prepend IV to ciphertext so we can extract it during decryption
+    final ivAndCipher = iv.base64 + ':' + encrypted.base64;
+    return ivAndCipher;
   }
 
   String _decrypt(String encrypted, String password) {
     final keyBytes = _deriveKeyBytes(password, _saltPrefix);
     final key = enc.Key(keyBytes);
-    final iv = enc.IV.fromLength(16);
+    // Split IV and ciphertext
+    final parts = encrypted.split(':');
+    if (parts.length != 2) throw Exception('Invalid encrypted format');
+    final iv = enc.IV.fromBase64(parts[0]);
+    final ciphertext = parts[1];
     final encrypter = enc.Encrypter(enc.AES(key));
-    return encrypter.decrypt64(encrypted, iv: iv);
+    return encrypter.decrypt64(ciphertext, iv: iv);
   }
 
   Uint8List _deriveKeyBytes(String password, String salt) {

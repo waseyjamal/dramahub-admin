@@ -171,8 +171,12 @@ class _LoginPageState extends State<LoginPage> {
       print('DEBUG 7: getToken result = ${token == null ? "NULL" : "SUCCESS"}');
 
       if (token == null) {
-        controller.errorMessage.value = 'Invalid password.';
-        // If decryption fails, stay on current field but don't force PAT field
+        print('DEBUG: Decryption failed or token missing. Forcing PAT field.');
+        controller.errorMessage.value = 'Invalid password or corrupted session. Please re-enter GitHub PAT.';
+        setState(() {
+          _showTokenField = true;
+          _isPatValid = false;
+        });
         return;
       }
     } else {
