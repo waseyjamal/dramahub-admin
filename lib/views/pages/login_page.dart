@@ -150,6 +150,15 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleLogin(
       AuthController controller, StorageService storage) async {
     final password = _passwordController.text;
+
+    print('DEBUG 1: _showTokenField = $_showTokenField');
+    print('DEBUG 2: password entered = $password');
+    print('DEBUG 3: calling hasToken...');
+    final has = await storage.hasToken();
+    print('DEBUG 4: hasToken = $has');
+    final expired = await storage.isTokenExpired();
+    print('DEBUG 5: isTokenExpired = $expired');
+
     if (password.isEmpty) {
       controller.errorMessage.value = 'Password is required.';
       return;
@@ -157,8 +166,10 @@ class _LoginPageState extends State<LoginPage> {
 
     String? token;
     if (!_showTokenField) {
-      // Try to retrieve existing PAT using the provided password
+      print('DEBUG 6: calling getToken...');
       token = await storage.getToken(password);
+      print('DEBUG 7: getToken result = ${token == null ? "NULL" : "SUCCESS"}');
+
       if (token == null) {
         controller.errorMessage.value = 'Invalid password.';
         // If decryption fails, stay on current field but don't force PAT field
