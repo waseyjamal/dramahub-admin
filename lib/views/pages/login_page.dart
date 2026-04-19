@@ -174,7 +174,8 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final success = await controller.login(password, token);
+    final success = await controller.login(password, token,
+        isNewToken: _showTokenField);
     if (success) {
       // Clear secondary field state for next time
       setState(() {

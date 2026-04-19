@@ -66,7 +66,8 @@ class AuthController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> login(String password, String token) async {
+  Future<bool> login(String password, String token,
+      {bool isNewToken = false}) async {
     final valid = await _authService.validatePassword(password);
 
     if (!valid) {
@@ -74,7 +75,9 @@ class AuthController extends GetxController with WidgetsBindingObserver {
       return false;
     }
 
-    await _storage.saveToken(token, password);
+    if (isNewToken) {
+      await _storage.saveToken(token, password);
+    }
     await _storage.saveSession(true);
     _githubService.setAuthToken(token);
 
