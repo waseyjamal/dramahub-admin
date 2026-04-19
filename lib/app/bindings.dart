@@ -17,7 +17,6 @@ class AppBindings extends Bindings {
   @override
   void dependencies() {
     Get.put<GitHubService>(GitHubService(), permanent: true);
-    Get.put<StorageService>(StorageService(), permanent: true);
     Get.put<ValidationService>(ValidationService(), permanent: true);
     Get.put<VersionCompatibilityService>(VersionCompatibilityService(),
         permanent: true);

@@ -15,18 +15,24 @@ class StorageService {
   static const _saltPrefix = 'dramahub_';
   static const int _patExpiryDays = 10;
 
-  bool isTokenExpired() {
+  Future<void> init() async {
+    await _storage.ready;
+  }
+
+  Future<bool> isTokenExpired() async {
+    await _storage.ready;
     final created = _storage.getItem('token_created_at');
     if (created == null) return true;
     try {
-      final date = DateTime.parse(created);
+      final date = DateTime.parse(created.toString());
       return DateTime.now().difference(date).inDays >= _patExpiryDays;
     } catch (_) {
       return true;
     }
   }
 
-  bool hasToken() {
+  Future<bool> hasToken() async {
+    await _storage.ready;
     final token = _storage.getItem(StorageKeys.token);
     return token != null && token.toString().isNotEmpty;
   }
@@ -41,10 +47,11 @@ class StorageService {
   }
 
   Future<String?> getToken(String password) async {
+    await _storage.ready;
     final encrypted = _storage.getItem(StorageKeys.token);
     if (encrypted == null) return null;
     try {
-      return _decrypt(encrypted, password);
+      return _decrypt(encrypted.toString(), password);
     } catch (e) {
       return null;
     }

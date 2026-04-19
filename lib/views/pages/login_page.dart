@@ -19,10 +19,17 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _checkTokenStatus();
+  }
+
+  Future<void> _checkTokenStatus() async {
     final storage = Get.find<StorageService>();
-    // Check if we have a token that is NOT expired (within 10 days)
-    _isPatValid = storage.hasToken() && !storage.isTokenExpired();
-    _showTokenField = !_isPatValid;
+    final has = await storage.hasToken();
+    final expired = await storage.isTokenExpired();
+    setState(() {
+      _isPatValid = has && !expired;
+      _showTokenField = !_isPatValid;
+    });
   }
 
   @override
@@ -154,6 +161,7 @@ class _LoginPageState extends State<LoginPage> {
       token = await storage.getToken(password);
       if (token == null) {
         controller.errorMessage.value = 'Invalid password.';
+        // If decryption fails, stay on current field but don't force PAT field
         return;
       }
     } else {
