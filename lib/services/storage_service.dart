@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:encrypt/encrypt.dart';
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/foundation.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:pointycastle/export.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html if (dart.library.io) '../core/stubs/html_stub.dart';
 
 import '../core/constants/storage_keys.dart';
+import '../core/session/session_storage.dart';
 
 class StorageService {
   final LocalStorage _storage = LocalStorage('dramahub_admin');
+  final SessionStorage _sessionStorage = SessionStorage();
 
   static const _saltPrefix = 'dramahub_';
   static const int _patExpiryDays = 10;
@@ -56,24 +56,21 @@ class StorageService {
   }
 
   Future<void> saveSession(bool isLoggedIn) async {
-    if (kIsWeb) {
-      html.window.sessionStorage[StorageKeys.session] = isLoggedIn.toString();
-    } else {
+    _sessionStorage.saveSession(isLoggedIn);
+    // On mobile, we still keep a shadow copy in localStorage if needed for specific logic,
+    // but the source of truth is now the conditional sessionStorage/in-memory flag.
+    if (!kIsWeb) {
       await _storage.setItem(StorageKeys.session, isLoggedIn);
     }
   }
 
   bool isLoggedIn() {
-    if (kIsWeb) {
-      return html.window.sessionStorage[StorageKeys.session] == 'true';
-    }
-    return _storage.getItem(StorageKeys.session) ?? false;
+    return _sessionStorage.isLoggedIn();
   }
 
   Future<void> clearSession() async {
-    if (kIsWeb) {
-      html.window.sessionStorage.remove(StorageKeys.session);
-    } else {
+    _sessionStorage.clearSession();
+    if (!kIsWeb) {
       await _storage.deleteItem(StorageKeys.session);
     }
   }
@@ -112,17 +109,17 @@ class StorageService {
 
   String _encrypt(String text, String password) {
     final keyBytes = _deriveKeyBytes(password, _saltPrefix);
-    final key = Key(keyBytes);
-    final iv = IV.fromLength(16);
-    final encrypter = Encrypter(AES(key));
+    final key = enc.Key(keyBytes);
+    final iv = enc.IV.fromLength(16);
+    final encrypter = enc.Encrypter(enc.AES(key));
     return encrypter.encrypt(text, iv: iv).base64;
   }
 
   String _decrypt(String encrypted, String password) {
     final keyBytes = _deriveKeyBytes(password, _saltPrefix);
-    final key = Key(keyBytes);
-    final iv = IV.fromLength(16);
-    final encrypter = Encrypter(AES(key));
+    final key = enc.Key(keyBytes);
+    final iv = enc.IV.fromLength(16);
+    final encrypter = enc.Encrypter(enc.AES(key));
     return encrypter.decrypt64(encrypted, iv: iv);
   }
 
