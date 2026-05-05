@@ -41,6 +41,17 @@ class DramaController extends GetxController {
     }
 
     dramas.add(drama);
+
+    // Create empty episode file for new drama
+    final dramaId = drama['id'] as String;
+    if (dramaId.isNotEmpty) {
+      await _repository.commitJsonList(
+        path: 'episodes/$dramaId.json',
+        data: [],
+        message: 'Init episodes for $dramaId',
+      );
+    }
+
     await _commit('Add drama: ${drama['title']}');
 
     try {
