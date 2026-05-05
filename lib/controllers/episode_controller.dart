@@ -51,7 +51,8 @@ class EpisodeController extends GetxController {
         episodes.assignAll(List<Map<String, dynamic>>.from(data));
         _sortDescending();
       } catch (e2) {
-        errorMessage.value = e2.toString();
+        episodes.assignAll([]);
+        errorMessage.value = '';
       }
     } finally {
       isLoading.value = false;

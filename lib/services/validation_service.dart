@@ -17,8 +17,15 @@ class ValidationService {
       errors.add('dramaId is required.');
     }
 
-    if (json['videoId'] == null || json['videoId'].toString().isEmpty) {
-      errors.add('videoId is required.');
+    final isCustom = json['playerType'] == 'custom';
+    if (isCustom) {
+      if (json['streamUrl'] == null || json['streamUrl'].toString().isEmpty) {
+        errors.add('streamUrl is required for custom player.');
+      }
+    } else {
+      if (json['videoId'] == null || json['videoId'].toString().isEmpty) {
+        errors.add('videoId is required.');
+      }
     }
 
     if (json['episodeNumber'] == null || json['episodeNumber'] < 1) {
