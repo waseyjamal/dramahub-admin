@@ -72,6 +72,13 @@ class AdController extends GetxController {
     'download_screen': false,
   }.obs;
 
+  // ─── VAST ─────────────────────────────────────────────────────────
+  final RxBool vastEnabled = false.obs;
+  final RxInt vastSkipAfterSeconds = 5.obs;
+  final RxInt vastMaxPerSession = 3.obs;
+  final RxInt vastGapBetweenAdsMinutes = 10.obs;
+  final RxList<Map<String, dynamic>> vastWaterfall = <Map<String, dynamic>>[].obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -134,6 +141,17 @@ class AdController extends GetxController {
         nativeScreens[k] = v as bool? ?? false;
       });
 
+      // VAST
+      final vast = json['vast'] as Map<String, dynamic>? ?? {};
+      vastEnabled.value = vast['enabled'] ?? false;
+      vastSkipAfterSeconds.value = vast['skip_after_seconds'] ?? 5;
+      vastMaxPerSession.value = vast['max_per_session'] ?? 3;
+      vastGapBetweenAdsMinutes.value = vast['gap_between_ads_minutes'] ?? 10;
+      final waterfallJson = vast['waterfall'] as List<dynamic>? ?? [];
+      vastWaterfall.assignAll(
+        waterfallJson.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+      );
+
       statusMessage.value = '✅ Config loaded';
     } catch (e) {
       hasError.value = true;
@@ -174,6 +192,13 @@ class AdController extends GetxController {
           'every_nth_card': nativeEveryNthCard.value,
           'ad_unit_id': nativeAdUnitId.text.trim(),
           'screens': Map<String, bool>.from(nativeScreens),
+        },
+        'vast': {
+          'enabled': vastEnabled.value,
+          'skip_after_seconds': vastSkipAfterSeconds.value,
+          'max_per_session': vastMaxPerSession.value,
+          'gap_between_ads_minutes': vastGapBetweenAdsMinutes.value,
+          'waterfall': vastWaterfall.toList(),
         },
       };
 

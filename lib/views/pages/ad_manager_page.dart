@@ -59,6 +59,10 @@ class AdManagerPage extends StatelessWidget {
 
                 // ─── Native ───────────────────────────────────────────
                 _NativeSection(c: c),
+                const SizedBox(height: 12),
+
+                // ─── VAST ─────────────────────────────────────────────
+                _VastSection(c: c),
                 const SizedBox(height: 24),
 
                 // ─── Save Button ──────────────────────────────────────
@@ -753,5 +757,201 @@ class _ScreenToggles extends StatelessWidget {
     if (screen.contains('rate')) return Icons.star_rate_outlined;
     if (screen.contains('report')) return Icons.flag_outlined;
     return Icons.phone_android_outlined;
+  }
+}
+
+class _VastSection extends StatelessWidget {
+  final AdController c;
+  const _VastSection({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return _AdCard(
+      title: 'VAST Video Ads (Preroll)',
+      icon: Icons.smart_display_rounded,
+      color: Colors.red,
+      isEnabled: c.vastEnabled,
+      onToggle: (v) => c.vastEnabled.value = v,
+      children: [
+        // Skip after seconds slider
+        Obx(() => _SliderTile(
+              label: 'Skip button after',
+              value: c.vastSkipAfterSeconds.value.toDouble(),
+              min: 3,
+              max: 30,
+              divisions: 27,
+              displayText: '${c.vastSkipAfterSeconds.value}s',
+              onChanged: (v) => c.vastSkipAfterSeconds.value = v.round(),
+            )),
+        const SizedBox(height: 8),
+
+        // Max per session slider
+        Obx(() => _SliderTile(
+              label: 'Max ads per session',
+              value: c.vastMaxPerSession.value.toDouble(),
+              min: 1,
+              max: 10,
+              divisions: 9,
+              displayText: '${c.vastMaxPerSession.value} ads',
+              onChanged: (v) => c.vastMaxPerSession.value = v.round(),
+            )),
+        const SizedBox(height: 8),
+
+        // Gap between ads slider
+        Obx(() => _SliderTile(
+              label: 'Gap between ads',
+              value: c.vastGapBetweenAdsMinutes.value.toDouble(),
+              min: 1,
+              max: 60,
+              divisions: 59,
+              displayText: '${c.vastGapBetweenAdsMinutes.value} min',
+              onChanged: (v) => c.vastGapBetweenAdsMinutes.value = v.round(),
+            )),
+        const SizedBox(height: 16),
+
+        // Waterfall header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Ad Networks (Waterfall)',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            TextButton.icon(
+              onPressed: () {
+                c.vastWaterfall.add({
+                  'network': 'new_network',
+                  'url': '',
+                  'priority': c.vastWaterfall.length + 1,
+                  'enabled': false,
+                });
+              },
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('Add', style: TextStyle(fontSize: 13)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Waterfall list
+        Obx(() => Column(
+              children: c.vastWaterfall.asMap().entries.map((entry) {
+                final i = entry.key;
+                final network = entry.value;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Network name + enabled toggle + delete
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Priority ${network['priority']}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red.shade700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: network['network'],
+                              decoration: const InputDecoration(
+                                labelText: 'Network name',
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                              ),
+                              style: const TextStyle(fontSize: 13),
+                              onChanged: (v) {
+                                c.vastWaterfall[i] = {
+                                  ...c.vastWaterfall[i],
+                                  'network': v,
+                                };
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Switch(
+                            value: network['enabled'] ?? false,
+                            onChanged: (v) {
+                              c.vastWaterfall[i] = {
+                                ...c.vastWaterfall[i],
+                                'enabled': v,
+                              };
+                            },
+                            activeThumbColor: Colors.red,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.red, size: 20),
+                            onPressed: () => c.vastWaterfall.removeAt(i),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // VAST URL field
+                      TextFormField(
+                        initialValue: network['url'],
+                        decoration: const InputDecoration(
+                          labelText: 'VAST URL',
+                          hintText: 'https://...',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 8),
+                          prefixIcon: Icon(Icons.link, size: 18),
+                        ),
+                        style: const TextStyle(fontSize: 12),
+                        onChanged: (v) {
+                          c.vastWaterfall[i] = {
+                            ...c.vastWaterfall[i],
+                            'url': v,
+                          };
+                        },
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Priority field
+                      TextFormField(
+                        initialValue: network['priority'].toString(),
+                        decoration: const InputDecoration(
+                          labelText: 'Priority (1 = highest)',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 8),
+                        ),
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(fontSize: 13),
+                        onChanged: (v) {
+                          c.vastWaterfall[i] = {
+                            ...c.vastWaterfall[i],
+                            'priority': int.tryParse(v) ?? (i + 1),
+                          };
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            )),
+      ],
+    );
   }
 }
