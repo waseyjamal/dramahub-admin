@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/foundation.dart';
 import 'package:localstorage/localstorage.dart';
@@ -123,7 +122,7 @@ class StorageService {
     final encrypter = enc.Encrypter(enc.AES(key));
     final encrypted = encrypter.encrypt(text, iv: iv);
     // Prepend IV to ciphertext so we can extract it during decryption
-    final ivAndCipher = iv.base64 + ':' + encrypted.base64;
+    final ivAndCipher = '${iv.base64}:${encrypted.base64}';
     return ivAndCipher;
   }
 

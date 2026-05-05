@@ -113,7 +113,7 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
               await controller.addDrama(data);
             }
 
-            Navigator.pop(context);
+            if (context.mounted) Navigator.pop(context);
           },
           child: Text(isEdit ? 'Update' : 'Save'),
         ),

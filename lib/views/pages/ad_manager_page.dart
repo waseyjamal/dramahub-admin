@@ -34,7 +34,7 @@ class AdManagerPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ─── Header ───────────────────────────────────────────
-                _SectionHeader(
+                const _SectionHeader(
                   icon: Icons.campaign_rounded,
                   title: 'Ad Manager',
                   subtitle: 'Control all ads remotely — no app update needed',
@@ -127,7 +127,7 @@ class _GlobalKillSwitch extends StatelessWidget {
             trailing: Switch(
               value: c.adsEnabled.value,
               onChanged: (v) => c.adsEnabled.value = v,
-              activeColor: Colors.green.shade700,
+              activeThumbColor: Colors.green.shade700,
               inactiveThumbColor: Colors.red.shade700,
             ),
           ),
@@ -570,7 +570,7 @@ class _AdCard extends StatelessWidget {
                 Obx(() => Switch(
                       value: isEnabled.value,
                       onChanged: onToggle,
-                      activeColor: color,
+                       activeThumbColor: color,
                     )),
               ],
             ),
@@ -721,7 +721,7 @@ class _ScreenToggles extends StatelessWidget {
                           Switch(
                             value: screens[screen] ?? false,
                             onChanged: (v) => screens[screen] = v,
-                            activeColor: Colors.deepPurple,
+                           activeThumbColor: Colors.deepPurple,
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
                           ),

@@ -151,9 +151,6 @@ class _LoginPageState extends State<LoginPage> {
       AuthController controller, StorageService storage) async {
     final password = _passwordController.text;
 
-    final has = await storage.hasToken();
-    final expired = await storage.isTokenExpired();
-
     if (password.isEmpty) {
       controller.errorMessage.value = 'Password is required.';
       return;
@@ -175,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
       token = _tokenController.text.trim();
     }
 
-    if (token == null || token.isEmpty) {
+    if (token.isEmpty) {
       controller.errorMessage.value = 'GitHub PAT is required.';
       setState(() => _showTokenField = true);
       return;

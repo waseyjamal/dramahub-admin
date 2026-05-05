@@ -12,6 +12,9 @@ dependencies:
   # State management
   get: ^4.6.6
 
+  # Web JS interop
+  web: ^1.1.1
+
   cloud_firestore: ^6.1.2
   firebase_core: ^4.4.0
 

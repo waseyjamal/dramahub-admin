@@ -90,7 +90,7 @@ class ConfigPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               await controller.updateField(key, textController.text);
-              Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
             child: const Text('Save'),
           ),
@@ -190,7 +190,7 @@ class _HeroSliderPicker extends StatelessWidget {
                                 style: TextStyle(
                                     color: Colors.grey.shade400, fontSize: 13))
                             : DropdownButtonFormField<String>(
-                                value: slotValue.isEmpty ? null : slotValue,
+                                initialValue: slotValue.isEmpty ? null : slotValue,
                                 hint: Text(
                                   'Slot ${slotIndex + 1} — Empty',
                                   style: TextStyle(

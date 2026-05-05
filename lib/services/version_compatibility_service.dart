@@ -18,7 +18,7 @@ class VersionCompatibilityService {
     final latestVersion = config['latest_admin_version'] ?? 1;
     final forceUpdate = config['force_update_admin'] ?? false;
 
-    final current = VersionConstants.adminVersion;
+    const current = VersionConstants.adminVersion;
 
     if (current < minVersion) {
       return VersionCheckResult(
