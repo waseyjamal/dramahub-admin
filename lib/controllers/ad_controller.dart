@@ -44,6 +44,8 @@ class AdController extends GetxController {
 
   // ─── Rewarded ─────────────────────────────────────────────────────
   final RxBool rewardedEnabled = true.obs;
+  final RxInt rewardedCooldownSeconds = 30.obs;
+  final RxInt rewardedMaxPerSession = 5.obs;
   final rewardedAdUnitId = TextEditingController();
   final RxMap<String, bool> rewardedScreens = <String, bool>{
     'home_screen': false,
@@ -125,6 +127,8 @@ class AdController extends GetxController {
       // Rewarded
       final rew = json['rewarded'] as Map<String, dynamic>? ?? {};
       rewardedEnabled.value = rew['enabled'] ?? true;
+      rewardedCooldownSeconds.value = rew['cooldown_seconds'] ?? 30;
+      rewardedMaxPerSession.value = rew['max_per_session'] ?? 5;
       rewardedAdUnitId.text = rew['ad_unit_id'] ?? '';
       final rewScreens = rew['screens'] as Map<String, dynamic>? ?? {};
       rewScreens.forEach((k, v) {
@@ -184,6 +188,8 @@ class AdController extends GetxController {
         },
         'rewarded': {
           'enabled': rewardedEnabled.value,
+          'cooldown_seconds': rewardedCooldownSeconds.value,
+          'max_per_session': rewardedMaxPerSession.value,
           'ad_unit_id': rewardedAdUnitId.text.trim(),
           'screens': Map<String, bool>.from(rewardedScreens),
         },
