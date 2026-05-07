@@ -29,6 +29,7 @@ class AdController extends GetxController {
   final interstitialAdUnitId = TextEditingController();
   final RxMap<String, bool> interstitialScreens = <String, bool>{
     'home_screen': false,
+    'continue_watching': false,
     'episodes_screen': true,
     'video_screen': true,
     'upcoming_screen': false,
@@ -49,6 +50,7 @@ class AdController extends GetxController {
   final rewardedAdUnitId = TextEditingController();
   final RxMap<String, bool> rewardedScreens = <String, bool>{
     'home_screen': false,
+    'continue_watching': false,
     'episodes_screen': true,
     'video_screen': true,
     'upcoming_screen': false,
