@@ -48916,7 +48916,7 @@ A.y0(o,new A.a8t(),t.rk)
 A.y0(o,new A.a8u(),t.Ty)
 A.y0(o,new A.a8v(),t.Lv)}}
 A.a8p.prototype={
-$0(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3=null,a4="watchlist_screen",a5="suggest_drama_screen",a6="report_problem_screen"
+$0(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3=null,a4="continue_watching",a5="watchlist_screen",a6="suggest_drama_screen",a7="report_problem_screen"
 $.bE()
 s=$.at
 if(s==null)s=$.at=B.F
@@ -48934,15 +48934,15 @@ i=A.hF(!0)
 h=A.fj(30)
 g=A.fj(8)
 f=t.y
-e=A.ak0(A.aF(["home_screen",!1,"episodes_screen",!0,"video_screen",!0,"upcoming_screen",!1,a4,!1,"history_screen",!1,"download_screen",!1,"profile_screen",!1,"premium_screen",!1,a5,!1,"rate_app_screen",!1,a6,!1],r,f),r,f)
+e=A.ak0(A.aF(["home_screen",!1,a4,!1,"episodes_screen",!0,"video_screen",!0,"upcoming_screen",!1,a5,!1,"history_screen",!1,"download_screen",!1,"profile_screen",!1,"premium_screen",!1,a6,!1,"rate_app_screen",!1,a7,!1],r,f),r,f)
 d=A.hF(!0)
 c=A.fj(30)
 b=A.fj(5)
-a=A.ak0(A.aF(["home_screen",!1,"episodes_screen",!0,"video_screen",!0,"upcoming_screen",!1,a4,!1,"history_screen",!1,"download_screen",!1,"profile_screen",!1,"premium_screen",!1,a5,!1,"rate_app_screen",!1,a6,!1],r,f),r,f)
+a=A.ak0(A.aF(["home_screen",!1,a4,!1,"episodes_screen",!0,"video_screen",!0,"upcoming_screen",!1,a5,!1,"history_screen",!1,"download_screen",!1,"profile_screen",!1,"premium_screen",!1,a6,!1,"rate_app_screen",!1,a7,!1],r,f),r,f)
 a0=A.hF(!1)
 a1=A.fj(5)
 a2=t.Wo
-a2=new A.oj(new A.mU(s,new A.q_(A.t(r,t.UY))),q,p,o,n,m,l,k,new A.dt(B.ci,j),i,h,g,new A.dt(B.ci,j),e,d,c,b,new A.dt(B.ci,j),a,a0,a1,new A.dt(B.ci,j),A.ak0(A.aF(["home_screen",!1,"episodes_screen",!1,a4,!1,"history_screen",!1,"download_screen",!1],r,f),r,f),A.hF(!1),A.fj(5),A.fj(3),A.fj(10),A.Vb(A.a([],t.H7),t.P),A.a([],t.EH),A.eH(a3,a3,a3,t.X,t.xW),new A.eb(a2),new A.eb(a2),!1,!1)
+a2=new A.oj(new A.mU(s,new A.q_(A.t(r,t.UY))),q,p,o,n,m,l,k,new A.dt(B.ci,j),i,h,g,new A.dt(B.ci,j),e,d,c,b,new A.dt(B.ci,j),a,a0,a1,new A.dt(B.ci,j),A.ak0(A.aF(["home_screen",!1,"episodes_screen",!1,a5,!1,"history_screen",!1,"download_screen",!1],r,f),r,f),A.hF(!1),A.fj(5),A.fj(3),A.fj(10),A.Vb(A.a([],t.H7),t.P),A.a([],t.EH),A.eH(a3,a3,a3,t.X,t.xW),new A.eb(a2),new A.eb(a2),!1,!1)
 a2.lp()
 return a2},
 $S:335}
