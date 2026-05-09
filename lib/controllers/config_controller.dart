@@ -32,7 +32,21 @@ class ConfigController extends GetxController {
   }
 
   Future<void> updateField(String key, dynamic value) async {
-    config[key] = value;
+    // Convert String input to correct type based on existing config value
+    final existing = config[key];
+    dynamic typedValue = value;
+
+    if (value is String) {
+      if (existing is bool) {
+        typedValue = value.toLowerCase() == 'true';
+      } else if (existing is int) {
+        typedValue = int.tryParse(value) ?? existing;
+      } else if (existing is double) {
+        typedValue = double.tryParse(value) ?? existing;
+      }
+    }
+
+    config[key] = typedValue;
     config.refresh();
     await _commit('Update config: $key');
   }
