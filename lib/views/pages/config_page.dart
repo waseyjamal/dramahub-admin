@@ -26,7 +26,7 @@ class ConfigPage extends StatelessWidget {
               // ✅ Build otherEntries INSIDE Obx so it reacts to config changes
               final allEntries = controller.config.entries.toList();
               final otherEntries = allEntries
-                  .where((e) => e.key != 'hero_slider_dramas')
+                  .where((e) => !['hero_slider_dramas', 'data_version', 'cdn_base', 'instagram_url', 'website_url'].contains(e.key))
                   .toList();
 
               return ListView(
@@ -35,6 +35,36 @@ class ConfigPage extends StatelessWidget {
                   _HeroSliderPicker(controller: controller),
 
                   _DataVersionCard(controller: controller),
+                  
+                  _UrlConfigCard(
+                    controller: controller,
+                    configKey: 'instagram_url',
+                    label: 'Instagram URL',
+                    defaultValue: 'https://instagram.com/arafta_hindi',
+                    description: 'Link to the official Instagram profile.',
+                    icon: Icons.camera_alt_rounded,
+                    requireHttps: true,
+                  ),
+                  _UrlConfigCard(
+                    controller: controller,
+                    configKey: 'website_url',
+                    label: 'Website URL',
+                    defaultValue: 'https://drama-hubs.blogspot.com',
+                    description: 'Link to the official website.',
+                    icon: Icons.language_rounded,
+                    requireHttps: true,
+                  ),
+                  _UrlConfigCard(
+                    controller: controller,
+                    configKey: 'cdn_base',
+                    label: 'CDN Base URL',
+                    defaultValue: 'https://dramahub-data.waseyjamal000.workers.dev',
+                    description: 'Emergency CDN switch — change only if Cloudflare is down.',
+                    icon: Icons.link_rounded,
+                    requireHttps: true,
+                    noTrailingSlash: true,
+                    hintText: 'https://dramahub-data.waseyjamal000.workers.dev',
+                  ),
 
                   // All other config entries
                   if (otherEntries.isEmpty)
@@ -505,5 +535,155 @@ class _DataVersionCard extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+class _UrlConfigCard extends StatefulWidget {
+  final ConfigController controller;
+  final String configKey;
+  final String label;
+  final String defaultValue;
+  final String description;
+  final IconData icon;
+  final bool requireHttps;
+  final bool noTrailingSlash;
+  final String? hintText;
+
+  const _UrlConfigCard({
+    required this.controller,
+    required this.configKey,
+    required this.label,
+    required this.defaultValue,
+    required this.description,
+    required this.icon,
+    this.requireHttps = false,
+    this.noTrailingSlash = false,
+    this.hintText,
+  });
+
+  @override
+  State<_UrlConfigCard> createState() => _UrlConfigCardState();
+}
+
+class _UrlConfigCardState extends State<_UrlConfigCard> {
+  late TextEditingController _textController;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentValue = widget.controller.config[widget.configKey]?.toString() ?? widget.defaultValue;
+    _textController = TextEditingController(text: currentValue);
+  }
+
+  void _validateAndSave() async {
+    final value = _textController.text.trim();
+    if (value.isEmpty) {
+      setState(() => _errorText = 'Cannot be empty');
+      return;
+    }
+    if (widget.requireHttps && !value.startsWith('https://')) {
+      setState(() => _errorText = 'Must start with https://');
+      return;
+    }
+    if (widget.noTrailingSlash && value.endsWith('/')) {
+      setState(() => _errorText = 'Must not end with a trailing slash');
+      return;
+    }
+
+    setState(() => _errorText = null);
+    await widget.controller.updateField(widget.configKey, value);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${widget.label} saved successfully')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.blue.withValues(alpha: 0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(widget.icon, color: Colors.blue, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  widget.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.description,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _textController,
+                    decoration: InputDecoration(
+                      labelText: widget.label,
+                      hintText: widget.hintText ?? widget.defaultValue,
+                      errorText: _errorText,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Obx(() => ElevatedButton.icon(
+                      onPressed: widget.controller.isLoading.value ? null : _validateAndSave,
+                      icon: widget.controller.isLoading.value
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.save_rounded),
+                      label: Text(widget.controller.isLoading.value ? 'Saving...' : 'Save'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    )),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
   }
 }
