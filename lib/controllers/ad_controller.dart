@@ -22,6 +22,25 @@ class AdController extends GetxController {
   final RxInt appOpenCooldownHours = 4.obs;
   final appOpenAdUnitId = TextEditingController();
 
+  // ─── Ad Networks ──────────────────────────────────────────────────
+  final RxBool appodealEnabled = true.obs;
+  final RxBool casEnabled = true.obs;
+
+  // ─── App Open Provider ────────────────────────────────────────────
+  final RxString appOpenProvider = 'cas'.obs;
+
+  // ─── Interstitial Priority ────────────────────────────────────────
+  final RxString interstitialPriority1 = 'appodeal'.obs;
+  final RxBool interstitialPriority1Enabled = true.obs;
+  final RxString interstitialPriority2 = 'cas'.obs;
+  final RxBool interstitialPriority2Enabled = false.obs;
+
+  // ─── Rewarded Priority ────────────────────────────────────────────
+  final RxString rewardedPriority1 = 'appodeal'.obs;
+  final RxBool rewardedPriority1Enabled = true.obs;
+  final RxString rewardedPriority2 = 'cas'.obs;
+  final RxBool rewardedPriority2Enabled = false.obs;
+
   // ─── Interstitial ─────────────────────────────────────────────────
   final RxBool interstitialEnabled = true.obs;
   final RxInt interstitialCooldownSeconds = 30.obs;
@@ -109,11 +128,17 @@ class AdController extends GetxController {
 
       adsEnabled.value = json['ads_enabled'] ?? true;
 
+      // Ad Networks
+      final adNetworks = json['ad_networks'] as Map<String, dynamic>? ?? {};
+      appodealEnabled.value = adNetworks['appodeal_enabled'] ?? true;
+      casEnabled.value = adNetworks['cas_enabled'] ?? true;
+
       // App Open
       final appOpen = json['app_open'] as Map<String, dynamic>? ?? {};
       appOpenEnabled.value = appOpen['enabled'] ?? true;
       appOpenCooldownHours.value = appOpen['cooldown_hours'] ?? 4;
       appOpenAdUnitId.text = appOpen['ad_unit_id'] ?? '';
+      appOpenProvider.value = appOpen['provider'] ?? 'cas';
 
       // Interstitial
       final inter = json['interstitial'] as Map<String, dynamic>? ?? {};
@@ -121,6 +146,10 @@ class AdController extends GetxController {
       interstitialCooldownSeconds.value = inter['cooldown_seconds'] ?? 30;
       interstitialMaxPerSession.value = inter['max_per_session'] ?? 3;
       interstitialAdUnitId.text = inter['ad_unit_id'] ?? '';
+      interstitialPriority1.value = inter['priority_1'] ?? 'appodeal';
+      interstitialPriority1Enabled.value = inter['priority_1_enabled'] ?? true;
+      interstitialPriority2.value = inter['priority_2'] ?? 'cas';
+      interstitialPriority2Enabled.value = inter['priority_2_enabled'] ?? false;
       final interScreens = inter['screens'] as Map<String, dynamic>? ?? {};
       interScreens.forEach((k, v) {
         interstitialScreens[k] = v as bool? ?? false;
@@ -132,6 +161,10 @@ class AdController extends GetxController {
       rewardedCooldownSeconds.value = rew['cooldown_seconds'] ?? 30;
       rewardedMaxPerSession.value = rew['max_per_session'] ?? 5;
       rewardedAdUnitId.text = rew['ad_unit_id'] ?? '';
+      rewardedPriority1.value = rew['priority_1'] ?? 'appodeal';
+      rewardedPriority1Enabled.value = rew['priority_1_enabled'] ?? true;
+      rewardedPriority2.value = rew['priority_2'] ?? 'cas';
+      rewardedPriority2Enabled.value = rew['priority_2_enabled'] ?? false;
       final rewScreens = rew['screens'] as Map<String, dynamic>? ?? {};
       rewScreens.forEach((k, v) {
         rewardedScreens[k] = v as bool? ?? false;
@@ -176,8 +209,13 @@ class AdController extends GetxController {
 
       final data = {
         'ads_enabled': adsEnabled.value,
+        'ad_networks': {
+          'appodeal_enabled': appodealEnabled.value,
+          'cas_enabled': casEnabled.value,
+        },
         'app_open': {
           'enabled': appOpenEnabled.value,
+          'provider': appOpenProvider.value,
           'cooldown_hours': appOpenCooldownHours.value,
           'ad_unit_id': appOpenAdUnitId.text.trim(),
         },
@@ -186,6 +224,10 @@ class AdController extends GetxController {
           'cooldown_seconds': interstitialCooldownSeconds.value,
           'max_per_session': interstitialMaxPerSession.value,
           'ad_unit_id': interstitialAdUnitId.text.trim(),
+          'priority_1': interstitialPriority1.value,
+          'priority_1_enabled': interstitialPriority1Enabled.value,
+          'priority_2': interstitialPriority2.value,
+          'priority_2_enabled': interstitialPriority2Enabled.value,
           'screens': Map<String, bool>.from(interstitialScreens),
         },
         'rewarded': {
@@ -193,6 +235,10 @@ class AdController extends GetxController {
           'cooldown_seconds': rewardedCooldownSeconds.value,
           'max_per_session': rewardedMaxPerSession.value,
           'ad_unit_id': rewardedAdUnitId.text.trim(),
+          'priority_1': rewardedPriority1.value,
+          'priority_1_enabled': rewardedPriority1Enabled.value,
+          'priority_2': rewardedPriority2.value,
+          'priority_2_enabled': rewardedPriority2Enabled.value,
           'screens': Map<String, bool>.from(rewardedScreens),
         },
         'native': {

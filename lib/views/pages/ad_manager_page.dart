@@ -44,8 +44,12 @@ class AdManagerPage extends StatelessWidget {
                 // ─── Global Kill Switch ───────────────────────────────
                 _GlobalKillSwitch(c: c),
                 const SizedBox(height: 16),
+                _WaterfallStatusCard(c: c),
+                const SizedBox(height: 16),
 
                 // ─── App Open ─────────────────────────────────────────
+                _AdNetworksSection(c: c),
+                const SizedBox(height: 12),
                 _AppOpenSection(c: c),
                 const SizedBox(height: 12),
 
@@ -160,15 +164,22 @@ class _AppOpenSection extends StatelessWidget {
           label: 'App Open Ad Unit ID',
         ),
         const SizedBox(height: 12),
+        Obx(() => _DropdownTile(
+          label: 'Provider',
+          value: c.appOpenProvider.value,
+          options: const ['cas', 'appodeal'],
+          onChanged: (v) => c.appOpenProvider.value = v!,
+        )),
+        const SizedBox(height: 12),
         Obx(() => _SliderTile(
-              label: 'Cooldown',
-              value: c.appOpenCooldownHours.value.toDouble(),
-              min: 1,
-              max: 12,
-              divisions: 11,
-              displayText: '${c.appOpenCooldownHours.value} hours',
-              onChanged: (v) => c.appOpenCooldownHours.value = v.round(),
-            )),
+          label: 'Cooldown',
+          value: c.appOpenCooldownHours.value.toDouble(),
+          min: 1,
+          max: 12,
+          divisions: 11,
+          displayText: '${c.appOpenCooldownHours.value} hours',
+          onChanged: (v) => c.appOpenCooldownHours.value = v.round(),
+        )),
       ],
     );
   }
@@ -196,24 +207,31 @@ class _InterstitialSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Obx(() => _SliderTile(
-              label: 'Cooldown between ads',
-              value: c.interstitialCooldownSeconds.value.toDouble(),
-              min: 10,
-              max: 120,
-              divisions: 11,
-              displayText: '${c.interstitialCooldownSeconds.value}s',
-              onChanged: (v) => c.interstitialCooldownSeconds.value = v.round(),
-            )),
+          label: 'Cooldown between ads',
+          value: c.interstitialCooldownSeconds.value.toDouble(),
+          min: 10,
+          max: 120,
+          divisions: 11,
+          displayText: '${c.interstitialCooldownSeconds.value}s',
+          onChanged: (v) => c.interstitialCooldownSeconds.value = v.round(),
+        )),
         const SizedBox(height: 8),
         Obx(() => _SliderTile(
-              label: 'Max per session',
-              value: c.interstitialMaxPerSession.value.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              displayText: '${c.interstitialMaxPerSession.value} ads',
-              onChanged: (v) => c.interstitialMaxPerSession.value = v.round(),
-            )),
+          label: 'Max per session',
+          value: c.interstitialMaxPerSession.value.toDouble(),
+          min: 1,
+          max: 10,
+          divisions: 9,
+          displayText: '${c.interstitialMaxPerSession.value} ads',
+          onChanged: (v) => c.interstitialMaxPerSession.value = v.round(),
+        )),
+        const SizedBox(height: 12),
+        _PrioritySection(
+          priority1: c.interstitialPriority1,
+          priority1Enabled: c.interstitialPriority1Enabled,
+          priority2: c.interstitialPriority2,
+          priority2Enabled: c.interstitialPriority2Enabled,
+        ),
         const SizedBox(height: 12),
         _ScreenToggles(
           title: 'Show on screens:',
@@ -246,24 +264,31 @@ class _RewardedSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Obx(() => _SliderTile(
-              label: 'Cooldown between ads',
-              value: c.rewardedCooldownSeconds.value.toDouble(),
-              min: 10,
-              max: 120,
-              divisions: 11,
-              displayText: '${c.rewardedCooldownSeconds.value}s',
-              onChanged: (v) => c.rewardedCooldownSeconds.value = v.round(),
-            )),
+          label: 'Cooldown between ads',
+          value: c.rewardedCooldownSeconds.value.toDouble(),
+          min: 10,
+          max: 120,
+          divisions: 11,
+          displayText: '${c.rewardedCooldownSeconds.value}s',
+          onChanged: (v) => c.rewardedCooldownSeconds.value = v.round(),
+        )),
         const SizedBox(height: 8),
         Obx(() => _SliderTile(
-              label: 'Max per session',
-              value: c.rewardedMaxPerSession.value.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              displayText: '${c.rewardedMaxPerSession.value} ads',
-              onChanged: (v) => c.rewardedMaxPerSession.value = v.round(),
-            )),
+          label: 'Max per session',
+          value: c.rewardedMaxPerSession.value.toDouble(),
+          min: 1,
+          max: 10,
+          divisions: 9,
+          displayText: '${c.rewardedMaxPerSession.value} ads',
+          onChanged: (v) => c.rewardedMaxPerSession.value = v.round(),
+        )),
+        const SizedBox(height: 12),
+        _PrioritySection(
+          priority1: c.rewardedPriority1,
+          priority1Enabled: c.rewardedPriority1Enabled,
+          priority2: c.rewardedPriority2,
+          priority2Enabled: c.rewardedPriority2Enabled,
+        ),
         const SizedBox(height: 12),
         _ScreenToggles(
           title: 'Show on screens:',
@@ -971,6 +996,405 @@ class _VastSection extends StatelessWidget {
                 );
               }).toList(),
             )),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WATERFALL STATUS CARD
+// ─────────────────────────────────────────────────────────────────────────────
+class _WaterfallStatusCard extends StatelessWidget {
+  final AdController c;
+  const _WaterfallStatusCard({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final String mode;
+      final Color color;
+      final IconData icon;
+
+      if (!c.adsEnabled.value) {
+        mode = 'All Ads Disabled';
+        color = Colors.red;
+        icon = Icons.block_rounded;
+      } else if (!c.appodealEnabled.value && !c.casEnabled.value) {
+        mode = 'All Networks Disabled';
+        color = Colors.red;
+        icon = Icons.block_rounded;
+      } else if (c.interstitialPriority1Enabled.value && c.interstitialPriority2Enabled.value) {
+        mode = 'Waterfall Active (${c.interstitialPriority1.value.toUpperCase()} → ${c.interstitialPriority2.value.toUpperCase()})';
+        color = Colors.blue;
+        icon = Icons.waterfall_chart_rounded;
+      } else if (c.interstitialPriority1Enabled.value && !c.interstitialPriority2Enabled.value) {
+        mode = '${c.interstitialPriority1.value.toUpperCase()} Only';
+        color = Colors.green;
+        icon = Icons.check_circle_rounded;
+      } else if (!c.interstitialPriority1Enabled.value && c.interstitialPriority2Enabled.value) {
+        mode = '${c.interstitialPriority2.value.toUpperCase()} Only';
+        color = Colors.green;
+        icon = Icons.check_circle_rounded;
+      } else {
+        mode = 'No Priority Enabled';
+        color = Colors.orange;
+        icon = Icons.warning_rounded;
+      }
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Live Mode',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  mode,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AD NETWORKS SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+class _AdNetworksSection extends StatelessWidget {
+  final AdController c;
+  const _AdNetworksSection({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey.withValues(alpha: 0.08),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.hub_rounded, color: Colors.blueGrey.shade700, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Ad Networks',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.blueGrey.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Obx(() => _NetworkToggleTile(
+                  name: 'Appodeal',
+                  subtitle: 'Primary mediation network',
+                  value: c.appodealEnabled.value,
+                  color: Colors.deepPurple,
+                  onChanged: (v) => c.appodealEnabled.value = v,
+                )),
+                const SizedBox(height: 8),
+                Obx(() => _NetworkToggleTile(
+                  name: 'CAS.AI',
+                  subtitle: 'Secondary mediation network',
+                  value: c.casEnabled.value,
+                  color: Colors.teal,
+                  onChanged: (v) => c.casEnabled.value = v,
+                )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NetworkToggleTile extends StatelessWidget {
+  final String name;
+  final String subtitle;
+  final bool value;
+  final Color color;
+  final ValueChanged<bool> onChanged;
+
+  const _NetworkToggleTile({
+    required this.name,
+    required this.subtitle,
+    required this.value,
+    required this.color,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: value ? color.withValues(alpha: 0.06) : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: value ? color.withValues(alpha: 0.3) : Colors.grey.shade200,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: value ? Colors.green : Colors.grey.shade400,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: value ? color : Colors.grey.shade600,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: color,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRIORITY SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+class _PrioritySection extends StatelessWidget {
+  final RxString priority1;
+  final RxBool priority1Enabled;
+  final RxString priority2;
+  final RxBool priority2Enabled;
+
+  const _PrioritySection({
+    required this.priority1,
+    required this.priority1Enabled,
+    required this.priority2,
+    required this.priority2Enabled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Waterfall Priority',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Obx(() => _PriorityTile(
+                label: 'Priority 1',
+                value: priority1.value,
+                enabled: priority1Enabled.value,
+                onNetworkChanged: (v) => priority1.value = v!,
+                onEnabledChanged: (v) => priority1Enabled.value = v,
+              )),
+              Divider(height: 1, color: Colors.grey.shade100),
+              Obx(() => _PriorityTile(
+                label: 'Priority 2',
+                value: priority2.value,
+                enabled: priority2Enabled.value,
+                onNetworkChanged: (v) => priority2.value = v!,
+                onEnabledChanged: (v) => priority2Enabled.value = v,
+              )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PriorityTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool enabled;
+  final ValueChanged<String?> onNetworkChanged;
+  final ValueChanged<bool> onEnabledChanged;
+
+  const _PriorityTile({
+    required this.label,
+    required this.value,
+    required this.enabled,
+    required this.onNetworkChanged,
+    required this.onEnabledChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.shade50,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple.shade700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              value: value,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                isDense: true,
+              ),
+              items: const [
+                DropdownMenuItem(value: 'appodeal', child: Text('Appodeal')),
+                DropdownMenuItem(value: 'cas', child: Text('CAS.AI')),
+              ],
+              onChanged: onNetworkChanged,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Switch(
+            value: enabled,
+            onChanged: onEnabledChanged,
+            activeThumbColor: Colors.deepPurple,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DROPDOWN TILE
+// ─────────────────────────────────────────────────────────────────────────────
+class _DropdownTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final List<String> options;
+  final ValueChanged<String?> onChanged;
+
+  const _DropdownTile({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+          ),
+          items: options
+              .map((o) => DropdownMenuItem(
+                    value: o,
+                    child: Text(o.toUpperCase()),
+                  ))
+              .toList(),
+          onChanged: onChanged,
+        ),
       ],
     );
   }
