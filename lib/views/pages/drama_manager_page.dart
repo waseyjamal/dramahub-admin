@@ -89,6 +89,7 @@ class _DramaManagerPageState extends State<DramaManagerPage> {
                 final isSearching = searchQuery.value.isNotEmpty;
 
                 return ReorderableListView.builder(
+                  restorationId: 'drama_reorder_list',
                   onReorder: isSearching
                       ? (oldIndex, newIndex) {}
                       : (oldIndex, newIndex) {
@@ -124,14 +125,17 @@ class _DramaManagerPageState extends State<DramaManagerPage> {
                             Row(
                               children: [
                                 if (!isSearching)
-                                  ReorderableDragStartListener(
+                                  ReorderableDelayedDragStartListener(
                                     index: index,
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(right: 8),
-                                      child: Icon(
-                                        Icons.drag_handle_rounded,
-                                        color: Colors.grey,
-                                        size: 20,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.grab,
+                                      child: const Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: Icon(
+                                          Icons.drag_handle_rounded,
+                                          color: Colors.grey,
+                                          size: 20,
+                                        ),
                                       ),
                                     ),
                                   ),
