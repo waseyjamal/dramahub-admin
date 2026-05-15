@@ -100,6 +100,10 @@ class DramaController extends GetxController {
 
     dramas.refresh();
     await _commit('Reorder dramas');
+
+    if (errorMessage.value.isEmpty) {
+      await loadDramas();
+    }
   }
 
   Future<void> updateTotalEpisodes(String dramaId, int count) async {
@@ -112,10 +116,15 @@ class DramaController extends GetxController {
   }
 
   Future<void> _commit(String message) async {
-    await _repository.commitJsonList(
-      path: _path,
-      data: dramas,
-      message: message,
-    );
+    try {
+      final snapshot = dramas.map((e) => Map<String, dynamic>.from(e)).toList();
+      await _repository.commitJsonList(
+        path: _path,
+        data: snapshot,
+        message: message,
+      );
+    } catch (e) {
+      errorMessage.value = 'Save failed: ${e.toString()}';
+    }
   }
 }
