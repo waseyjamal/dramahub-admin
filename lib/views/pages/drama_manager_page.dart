@@ -4,13 +4,25 @@ import '../../controllers/drama_controller.dart';
 import '../widgets/dialogs/confirm_dialog.dart';
 import '../widgets/forms/drama_form_dialog.dart';
 
-class DramaManagerPage extends StatelessWidget {
+class DramaManagerPage extends StatefulWidget {
   const DramaManagerPage({super.key});
 
   @override
+  State<DramaManagerPage> createState() => _DramaManagerPageState();
+}
+
+class _DramaManagerPageState extends State<DramaManagerPage> {
+  late final DramaController controller;
+  final searchQuery = ''.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<DramaController>();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.find<DramaController>();
-    final searchQuery = ''.obs;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
@@ -74,13 +86,23 @@ class DramaManagerPage extends StatelessWidget {
                   return const Center(child: Text('No dramas found'));
                 }
 
-                return ListView.builder(
+                final isSearching = searchQuery.value.isNotEmpty;
+
+                return ReorderableListView.builder(
+                  onReorder: isSearching
+                      ? (oldIndex, newIndex) {}
+                      : (oldIndex, newIndex) {
+                          if (newIndex > oldIndex) newIndex--;
+                          controller.reorder(oldIndex, newIndex);
+                        },
+                  buildDefaultDragHandles: false,
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final drama = filtered[index];
                     final isActive = drama['isActive'] ?? true;
 
                     return Container(
+                      key: ValueKey(drama['id'] ?? index.toString()),
                       margin: const EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -101,6 +123,18 @@ class DramaManagerPage extends StatelessWidget {
                           children: [
                             Row(
                               children: [
+                                if (!isSearching)
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: const Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: Icon(
+                                        Icons.drag_handle_rounded,
+                                        color: Colors.grey,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
                                 CircleAvatar(
                                   radius: 18,
                                   backgroundColor: isActive
