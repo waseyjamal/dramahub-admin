@@ -26,7 +26,7 @@ class ConfigPage extends StatelessWidget {
               // ✅ Build otherEntries INSIDE Obx so it reacts to config changes
               final allEntries = controller.config.entries.toList();
               final otherEntries = allEntries
-                  .where((e) => !['hero_slider_dramas', 'data_version', 'cdn_base', 'instagram_url', 'website_url'].contains(e.key))
+                  .where((e) => !['hero_slider_dramas', 'data_version', 'cdn_base', 'instagram_url', 'website_url', 'fallback_update'].contains(e.key))
                   .toList();
 
               return ListView(
@@ -65,6 +65,9 @@ class ConfigPage extends StatelessWidget {
                     noTrailingSlash: true,
                     hintText: 'https://dramahub-data.waseyjamal000.workers.dev',
                   ),
+
+                  // Fallback Update Card
+                  _FallbackUpdateCard(controller: controller),
 
                   // All other config entries
                   if (otherEntries.isEmpty)
@@ -685,5 +688,287 @@ class _UrlConfigCardState extends State<_UrlConfigCard> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+}
+
+class _FallbackUpdateCard extends StatefulWidget {
+  final ConfigController controller;
+
+  const _FallbackUpdateCard({required this.controller});
+
+  @override
+  State<_FallbackUpdateCard> createState() => _FallbackUpdateCardState();
+}
+
+class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
+  late TextEditingController _telegramUrlController;
+  late TextEditingController _websiteUrlController;
+
+  @override
+  void initState() {
+    super.initState();
+    final raw = widget.controller.config['fallback_update'];
+    final map = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    _telegramUrlController = TextEditingController(
+      text: map['telegram_url']?.toString() ?? 'https://t.me/araftahindisub',
+    );
+    _websiteUrlController = TextEditingController(
+      text: map['website_url']?.toString() ?? 'https://dramahubs.stream/',
+    );
+  }
+
+  @override
+  void dispose() {
+    _telegramUrlController.dispose();
+    _websiteUrlController.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> _currentMap() {
+    final raw = widget.controller.config['fallback_update'];
+    return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+  }
+
+  Future<void> _updateMap(Map<String, dynamic> updated) async {
+    await widget.controller.updateField('fallback_update', updated);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      // Read fresh every rebuild
+      final map = _currentMap();
+      final telegramEnabled = map['telegram_enabled'] as bool? ?? false;
+      final websiteEnabled = map['website_enabled'] as bool? ?? false;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.red.withValues(alpha: 0.4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──
+              const Row(
+                children: [
+                  Icon(Icons.update_rounded, color: Colors.red, size: 22),
+                  SizedBox(width: 8),
+                  Text(
+                    'Fallback Update Options',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Emergency update delivery if Play Store is unavailable. Both options are hidden by default.',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Telegram Section ──
+              Row(
+                children: [
+                  const Icon(Icons.send_rounded, size: 18, color: Colors.blueAccent),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Telegram Channel',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: telegramEnabled,
+                    activeColor: Colors.blueAccent,
+                    onChanged: widget.controller.isLoading.value
+                        ? null
+                        : (val) async {
+                            final updated = _currentMap();
+                            updated['telegram_enabled'] = val;
+                            updated['telegram_url'] = _telegramUrlController.text.trim();
+                            updated['website_enabled'] = websiteEnabled;
+                            updated['website_url'] = _websiteUrlController.text.trim();
+                            await _updateMap(updated);
+                          },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _telegramUrlController,
+                decoration: InputDecoration(
+                  labelText: 'Telegram URL',
+                  hintText: 'https://t.me/araftahindisub',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.save_rounded, size: 18),
+                    tooltip: 'Save Telegram URL',
+                    onPressed: widget.controller.isLoading.value
+                        ? null
+                        : () async {
+                            final url = _telegramUrlController.text.trim();
+                            if (!url.startsWith('https://') && !url.startsWith('https://t.me')) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Invalid Telegram URL')),
+                              );
+                              return;
+                            }
+                            final updated = _currentMap();
+                            updated['telegram_enabled'] = telegramEnabled;
+                            updated['telegram_url'] = url;
+                            updated['website_enabled'] = websiteEnabled;
+                            updated['website_url'] = _websiteUrlController.text.trim();
+                            await _updateMap(updated);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Telegram URL saved')),
+                              );
+                            }
+                          },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+
+              // ── Website Section ──
+              Row(
+                children: [
+                  const Icon(Icons.language_rounded, size: 18, color: Colors.green),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Website Download Page',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: websiteEnabled,
+                    activeColor: Colors.green,
+                    onChanged: widget.controller.isLoading.value
+                        ? null
+                        : (val) async {
+                            final updated = _currentMap();
+                            updated['telegram_enabled'] = telegramEnabled;
+                            updated['telegram_url'] = _telegramUrlController.text.trim();
+                            updated['website_enabled'] = val;
+                            updated['website_url'] = _websiteUrlController.text.trim();
+                            await _updateMap(updated);
+                          },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _websiteUrlController,
+                decoration: InputDecoration(
+                  labelText: 'Website Download URL',
+                  hintText: 'https://dramahubs.stream/p/app-download.html',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.save_rounded, size: 18),
+                    tooltip: 'Save Website URL',
+                    onPressed: widget.controller.isLoading.value
+                        ? null
+                        : () async {
+                            final url = _websiteUrlController.text.trim();
+                            if (!url.startsWith('https://')) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('URL must start with https://')),
+                              );
+                              return;
+                            }
+                            final updated = _currentMap();
+                            updated['telegram_enabled'] = telegramEnabled;
+                            updated['telegram_url'] = _telegramUrlController.text.trim();
+                            updated['website_enabled'] = websiteEnabled;
+                            updated['website_url'] = url;
+                            await _updateMap(updated);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Website URL saved')),
+                              );
+                            }
+                          },
+                  ),
+                ),
+              ),
+
+              // ── Status row ──
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      telegramEnabled || websiteEnabled
+                          ? Icons.check_circle_rounded
+                          : Icons.info_outline_rounded,
+                      size: 16,
+                      color: telegramEnabled || websiteEnabled
+                          ? Colors.green
+                          : Colors.grey,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      telegramEnabled && websiteEnabled
+                          ? 'Both fallback options are active in the update dialog'
+                          : telegramEnabled
+                              ? 'Telegram button is active in the update dialog'
+                              : websiteEnabled
+                                  ? 'Website button is active in the update dialog'
+                                  : 'Both options are hidden — only Play Store button shows',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: telegramEnabled || websiteEnabled
+                            ? Colors.green.shade700
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
