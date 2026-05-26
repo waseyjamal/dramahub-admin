@@ -775,6 +775,75 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
 
               const SizedBox(height: 20),
 
+              // ── Play Store Section ──
+              Row(
+                children: [
+                  const Icon(Icons.shop_rounded, size: 18, color: Colors.green),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Play Store',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
+                    ),
+                    child: const Text(
+                      'PRIMARY',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: map['playstore_enabled'] as bool? ?? true,
+                    activeColor: Colors.green,
+                    onChanged: widget.controller.isLoading.value
+                        ? null
+                        : (val) async {
+                            // ── Safety check — block if disabling last active option ──
+                            final tgEnabled = map['telegram_enabled'] as bool? ?? false;
+                            final webEnabled = map['website_enabled'] as bool? ?? false;
+                            if (!val && !tgEnabled && !webEnabled) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    '⚠️ Cannot disable all options — at least one must stay active.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            final updated = _currentMap();
+                            updated['playstore_enabled'] = val;
+                            updated['playstore_url'] = 'https://play.google.com/store/apps/details?id=com.dramahub.drama_hub';
+                            updated['telegram_enabled'] = tgEnabled;
+                            updated['telegram_url'] = _telegramUrlController.text.trim();
+                            updated['website_enabled'] = webEnabled;
+                            updated['website_url'] = _websiteUrlController.text.trim();
+                            await _updateMap(updated);
+                          },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Disable only if Play Store removes the app. Safety fallback will show Play Store button anyway if all options are off.',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+
               // ── Telegram Section ──
               Row(
                 children: [
@@ -791,10 +860,25 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
                     onChanged: widget.controller.isLoading.value
                         ? null
                         : (val) async {
+                            final playstoreEnabled = map['playstore_enabled'] as bool? ?? true;
+                            final webEnabled = map['website_enabled'] as bool? ?? false;
+                            if (!val && !playstoreEnabled && !webEnabled) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    '⚠️ Cannot disable all options — at least one must stay active.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
                             final updated = _currentMap();
+                            updated['playstore_enabled'] = playstoreEnabled;
+                            updated['playstore_url'] = 'https://play.google.com/store/apps/details?id=com.dramahub.drama_hub';
                             updated['telegram_enabled'] = val;
                             updated['telegram_url'] = _telegramUrlController.text.trim();
-                            updated['website_enabled'] = websiteEnabled;
+                            updated['website_enabled'] = webEnabled;
                             updated['website_url'] = _websiteUrlController.text.trim();
                             await _updateMap(updated);
                           },
@@ -869,7 +953,21 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
                     onChanged: widget.controller.isLoading.value
                         ? null
                         : (val) async {
+                            final playstoreEnabled = map['playstore_enabled'] as bool? ?? true;
+                            if (!val && !playstoreEnabled && !telegramEnabled) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    '⚠️ Cannot disable all options — at least one must stay active.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
                             final updated = _currentMap();
+                            updated['playstore_enabled'] = playstoreEnabled;
+                            updated['playstore_url'] = 'https://play.google.com/store/apps/details?id=com.dramahub.drama_hub';
                             updated['telegram_enabled'] = telegramEnabled;
                             updated['telegram_url'] = _telegramUrlController.text.trim();
                             updated['website_enabled'] = val;
@@ -954,7 +1052,7 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
                               ? 'Telegram button is active in the update dialog'
                               : websiteEnabled
                                   ? 'Website button is active in the update dialog'
-                                  : 'Both options are hidden — only Play Store button shows',
+                                  : 'All options hidden — Play Store button shows as safety fallback',
                       style: TextStyle(
                         fontSize: 12,
                         color: telegramEnabled || websiteEnabled
