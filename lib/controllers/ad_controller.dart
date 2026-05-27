@@ -95,6 +95,15 @@ class AdController extends GetxController {
     'download_screen': false,
   }.obs;
 
+  // ─── Download ─────────────────────────────────────────────────────
+  final RxBool downloadEnabled = true.obs;
+  final RxInt downloadCooldownSeconds = 120.obs;
+  final RxInt downloadMaxPerSession = 3.obs;
+  final RxString downloadPriority1 = 'cas'.obs;
+  final RxBool downloadPriority1Enabled = true.obs;
+  final RxString downloadPriority2 = 'appodeal'.obs;
+  final RxBool downloadPriority2Enabled = true.obs;
+
   // ─── VAST ─────────────────────────────────────────────────────────
   final RxBool vastEnabled = false.obs;
   final RxInt vastSkipAfterSeconds = 5.obs;
@@ -180,6 +189,16 @@ class AdController extends GetxController {
         nativeScreens[k] = v as bool? ?? false;
       });
 
+      // Download
+      final dl = json['download'] as Map<String, dynamic>? ?? {};
+      downloadEnabled.value = dl['enabled'] ?? true;
+      downloadCooldownSeconds.value = dl['cooldown_seconds'] ?? 120;
+      downloadMaxPerSession.value = dl['max_per_session'] ?? 3;
+      downloadPriority1.value = dl['priority_1'] ?? 'cas';
+      downloadPriority1Enabled.value = dl['priority_1_enabled'] ?? true;
+      downloadPriority2.value = dl['priority_2'] ?? 'appodeal';
+      downloadPriority2Enabled.value = dl['priority_2_enabled'] ?? true;
+
       // VAST
       final vast = json['vast'] as Map<String, dynamic>? ?? {};
       vastEnabled.value = vast['enabled'] ?? false;
@@ -246,6 +265,15 @@ class AdController extends GetxController {
           'every_nth_card': nativeEveryNthCard.value,
           'ad_unit_id': nativeAdUnitId.text.trim(),
           'screens': Map<String, bool>.from(nativeScreens),
+        },
+        'download': {
+          'enabled': downloadEnabled.value,
+          'cooldown_seconds': downloadCooldownSeconds.value,
+          'max_per_session': downloadMaxPerSession.value,
+          'priority_1': downloadPriority1.value,
+          'priority_1_enabled': downloadPriority1Enabled.value,
+          'priority_2': downloadPriority2.value,
+          'priority_2_enabled': downloadPriority2Enabled.value,
         },
         'vast': {
           'enabled': vastEnabled.value,

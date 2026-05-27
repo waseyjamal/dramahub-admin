@@ -65,6 +65,10 @@ class AdManagerPage extends StatelessWidget {
                 _NativeSection(c: c),
                 const SizedBox(height: 12),
 
+                // ─── Download ─────────────────────────────────────────
+                _DownloadSection(c: c),
+                const SizedBox(height: 12),
+
                 // ─── VAST ─────────────────────────────────────────────
                 _VastSection(c: c),
                 const SizedBox(height: 24),
@@ -802,6 +806,50 @@ class _ScreenToggles extends StatelessWidget {
     if (screen.contains('rate')) return Icons.star_rate_outlined;
     if (screen.contains('report')) return Icons.flag_outlined;
     return Icons.phone_android_outlined;
+  }
+}
+
+class _DownloadSection extends StatelessWidget {
+  final AdController c;
+  const _DownloadSection({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return _AdCard(
+      title: 'Download Button Ad',
+      icon: Icons.download_rounded,
+      color: Colors.green,
+      isEnabled: c.downloadEnabled,
+      onToggle: (v) => c.downloadEnabled.value = v,
+      children: [
+        Obx(() => _SliderTile(
+          label: 'Cooldown between ads',
+          value: c.downloadCooldownSeconds.value.toDouble(),
+          min: 30,
+          max: 300,
+          divisions: 27,
+          displayText: '${c.downloadCooldownSeconds.value}s',
+          onChanged: (v) => c.downloadCooldownSeconds.value = v.round(),
+        )),
+        const SizedBox(height: 8),
+        Obx(() => _SliderTile(
+          label: 'Max per session',
+          value: c.downloadMaxPerSession.value.toDouble(),
+          min: 1,
+          max: 10,
+          divisions: 9,
+          displayText: '${c.downloadMaxPerSession.value} ads',
+          onChanged: (v) => c.downloadMaxPerSession.value = v.round(),
+        )),
+        const SizedBox(height: 12),
+        _PrioritySection(
+          priority1: c.downloadPriority1,
+          priority1Enabled: c.downloadPriority1Enabled,
+          priority2: c.downloadPriority2,
+          priority2Enabled: c.downloadPriority2Enabled,
+        ),
+      ],
+    );
   }
 }
 
