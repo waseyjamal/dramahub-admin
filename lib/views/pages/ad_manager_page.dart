@@ -69,6 +69,10 @@ class AdManagerPage extends StatelessWidget {
                 _DownloadSection(c: c),
                 const SizedBox(height: 12),
 
+                // ─── Offline Playback Ads ──────────────────────────────
+                _OfflineAdsSection(c: c),
+                const SizedBox(height: 12),
+
                 // ─── VAST ─────────────────────────────────────────────
                 _VastSection(c: c),
                 const SizedBox(height: 24),
@@ -169,21 +173,21 @@ class _AppOpenSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Obx(() => _DropdownTile(
-          label: 'Provider',
-          value: c.appOpenProvider.value,
-          options: const ['cas', 'appodeal'],
-          onChanged: (v) => c.appOpenProvider.value = v!,
-        )),
+              label: 'Provider',
+              value: c.appOpenProvider.value,
+              options: const ['cas', 'appodeal'],
+              onChanged: (v) => c.appOpenProvider.value = v!,
+            )),
         const SizedBox(height: 12),
         Obx(() => _SliderTile(
-          label: 'Cooldown',
-          value: c.appOpenCooldownHours.value.toDouble(),
-          min: 1,
-          max: 12,
-          divisions: 11,
-          displayText: '${c.appOpenCooldownHours.value} hours',
-          onChanged: (v) => c.appOpenCooldownHours.value = v.round(),
-        )),
+              label: 'Cooldown',
+              value: c.appOpenCooldownHours.value.toDouble(),
+              min: 1,
+              max: 12,
+              divisions: 11,
+              displayText: '${c.appOpenCooldownHours.value} hours',
+              onChanged: (v) => c.appOpenCooldownHours.value = v.round(),
+            )),
       ],
     );
   }
@@ -211,24 +215,24 @@ class _InterstitialSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Obx(() => _SliderTile(
-          label: 'Cooldown between ads',
-          value: c.interstitialCooldownSeconds.value.toDouble(),
-          min: 10,
-          max: 120,
-          divisions: 11,
-          displayText: '${c.interstitialCooldownSeconds.value}s',
-          onChanged: (v) => c.interstitialCooldownSeconds.value = v.round(),
-        )),
+              label: 'Cooldown between ads',
+              value: c.interstitialCooldownSeconds.value.toDouble(),
+              min: 10,
+              max: 120,
+              divisions: 11,
+              displayText: '${c.interstitialCooldownSeconds.value}s',
+              onChanged: (v) => c.interstitialCooldownSeconds.value = v.round(),
+            )),
         const SizedBox(height: 8),
         Obx(() => _SliderTile(
-          label: 'Max per session',
-          value: c.interstitialMaxPerSession.value.toDouble(),
-          min: 1,
-          max: 10,
-          divisions: 9,
-          displayText: '${c.interstitialMaxPerSession.value} ads',
-          onChanged: (v) => c.interstitialMaxPerSession.value = v.round(),
-        )),
+              label: 'Max per session',
+              value: c.interstitialMaxPerSession.value.toDouble(),
+              min: 1,
+              max: 10,
+              divisions: 9,
+              displayText: '${c.interstitialMaxPerSession.value} ads',
+              onChanged: (v) => c.interstitialMaxPerSession.value = v.round(),
+            )),
         const SizedBox(height: 12),
         _PrioritySection(
           priority1: c.interstitialPriority1,
@@ -268,24 +272,24 @@ class _RewardedSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Obx(() => _SliderTile(
-          label: 'Cooldown between ads',
-          value: c.rewardedCooldownSeconds.value.toDouble(),
-          min: 10,
-          max: 120,
-          divisions: 11,
-          displayText: '${c.rewardedCooldownSeconds.value}s',
-          onChanged: (v) => c.rewardedCooldownSeconds.value = v.round(),
-        )),
+              label: 'Cooldown between ads',
+              value: c.rewardedCooldownSeconds.value.toDouble(),
+              min: 10,
+              max: 120,
+              divisions: 11,
+              displayText: '${c.rewardedCooldownSeconds.value}s',
+              onChanged: (v) => c.rewardedCooldownSeconds.value = v.round(),
+            )),
         const SizedBox(height: 8),
         Obx(() => _SliderTile(
-          label: 'Max per session',
-          value: c.rewardedMaxPerSession.value.toDouble(),
-          min: 1,
-          max: 10,
-          divisions: 9,
-          displayText: '${c.rewardedMaxPerSession.value} ads',
-          onChanged: (v) => c.rewardedMaxPerSession.value = v.round(),
-        )),
+              label: 'Max per session',
+              value: c.rewardedMaxPerSession.value.toDouble(),
+              min: 1,
+              max: 10,
+              divisions: 9,
+              displayText: '${c.rewardedMaxPerSession.value} ads',
+              onChanged: (v) => c.rewardedMaxPerSession.value = v.round(),
+            )),
         const SizedBox(height: 12),
         _PrioritySection(
           priority1: c.rewardedPriority1,
@@ -623,7 +627,7 @@ class _AdCard extends StatelessWidget {
                 Obx(() => Switch(
                       value: isEnabled.value,
                       onChanged: onToggle,
-                       activeThumbColor: color,
+                      activeThumbColor: color,
                     )),
               ],
             ),
@@ -774,7 +778,7 @@ class _ScreenToggles extends StatelessWidget {
                           Switch(
                             value: screens[screen] ?? false,
                             onChanged: (v) => screens[screen] = v,
-                           activeThumbColor: Colors.deepPurple,
+                            activeThumbColor: Colors.deepPurple,
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -823,24 +827,24 @@ class _DownloadSection extends StatelessWidget {
       onToggle: (v) => c.downloadEnabled.value = v,
       children: [
         Obx(() => _SliderTile(
-          label: 'Cooldown between ads',
-          value: c.downloadCooldownSeconds.value.toDouble(),
-          min: 30,
-          max: 300,
-          divisions: 27,
-          displayText: '${c.downloadCooldownSeconds.value}s',
-          onChanged: (v) => c.downloadCooldownSeconds.value = v.round(),
-        )),
+              label: 'Cooldown between ads',
+              value: c.downloadCooldownSeconds.value.toDouble(),
+              min: 30,
+              max: 300,
+              divisions: 27,
+              displayText: '${c.downloadCooldownSeconds.value}s',
+              onChanged: (v) => c.downloadCooldownSeconds.value = v.round(),
+            )),
         const SizedBox(height: 8),
         Obx(() => _SliderTile(
-          label: 'Max per session',
-          value: c.downloadMaxPerSession.value.toDouble(),
-          min: 1,
-          max: 10,
-          divisions: 9,
-          displayText: '${c.downloadMaxPerSession.value} ads',
-          onChanged: (v) => c.downloadMaxPerSession.value = v.round(),
-        )),
+              label: 'Max per session',
+              value: c.downloadMaxPerSession.value.toDouble(),
+              min: 1,
+              max: 10,
+              divisions: 9,
+              displayText: '${c.downloadMaxPerSession.value} ads',
+              onChanged: (v) => c.downloadMaxPerSession.value = v.round(),
+            )),
         const SizedBox(height: 12),
         _PrioritySection(
           priority1: c.downloadPriority1,
@@ -1007,8 +1011,8 @@ class _VastSection extends StatelessWidget {
                           labelText: 'VAST URL',
                           hintText: 'https://...',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           prefixIcon: Icon(Icons.link, size: 18),
                         ),
                         style: const TextStyle(fontSize: 12),
@@ -1027,8 +1031,8 @@ class _VastSection extends StatelessWidget {
                         decoration: const InputDecoration(
                           labelText: 'Priority (1 = highest)',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         ),
                         keyboardType: TextInputType.number,
                         style: const TextStyle(fontSize: 13),
@@ -1071,15 +1075,19 @@ class _WaterfallStatusCard extends StatelessWidget {
         mode = 'All Networks Disabled';
         color = Colors.red;
         icon = Icons.block_rounded;
-      } else if (c.interstitialPriority1Enabled.value && c.interstitialPriority2Enabled.value) {
-        mode = 'Waterfall Active (${c.interstitialPriority1.value.toUpperCase()} → ${c.interstitialPriority2.value.toUpperCase()})';
+      } else if (c.interstitialPriority1Enabled.value &&
+          c.interstitialPriority2Enabled.value) {
+        mode =
+            'Waterfall Active (${c.interstitialPriority1.value.toUpperCase()} → ${c.interstitialPriority2.value.toUpperCase()})';
         color = Colors.blue;
         icon = Icons.waterfall_chart_rounded;
-      } else if (c.interstitialPriority1Enabled.value && !c.interstitialPriority2Enabled.value) {
+      } else if (c.interstitialPriority1Enabled.value &&
+          !c.interstitialPriority2Enabled.value) {
         mode = '${c.interstitialPriority1.value.toUpperCase()} Only';
         color = Colors.green;
         icon = Icons.check_circle_rounded;
-      } else if (!c.interstitialPriority1Enabled.value && c.interstitialPriority2Enabled.value) {
+      } else if (!c.interstitialPriority1Enabled.value &&
+          c.interstitialPriority2Enabled.value) {
         mode = '${c.interstitialPriority2.value.toUpperCase()} Only';
         color = Colors.green;
         icon = Icons.check_circle_rounded;
@@ -1157,11 +1165,13 @@ class _AdNetworksSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.blueGrey.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Row(
               children: [
-                Icon(Icons.hub_rounded, color: Colors.blueGrey.shade700, size: 20),
+                Icon(Icons.hub_rounded,
+                    color: Colors.blueGrey.shade700, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Ad Networks',
@@ -1179,20 +1189,20 @@ class _AdNetworksSection extends StatelessWidget {
             child: Column(
               children: [
                 Obx(() => _NetworkToggleTile(
-                  name: 'Appodeal',
-                  subtitle: 'Primary mediation network',
-                  value: c.appodealEnabled.value,
-                  color: Colors.deepPurple,
-                  onChanged: (v) => c.appodealEnabled.value = v,
-                )),
+                      name: 'Appodeal',
+                      subtitle: 'Primary mediation network',
+                      value: c.appodealEnabled.value,
+                      color: Colors.deepPurple,
+                      onChanged: (v) => c.appodealEnabled.value = v,
+                    )),
                 const SizedBox(height: 8),
                 Obx(() => _NetworkToggleTile(
-                  name: 'CAS.AI',
-                  subtitle: 'Secondary mediation network',
-                  value: c.casEnabled.value,
-                  color: Colors.teal,
-                  onChanged: (v) => c.casEnabled.value = v,
-                )),
+                      name: 'CAS.AI',
+                      subtitle: 'Secondary mediation network',
+                      value: c.casEnabled.value,
+                      color: Colors.teal,
+                      onChanged: (v) => c.casEnabled.value = v,
+                    )),
               ],
             ),
           ),
@@ -1306,20 +1316,20 @@ class _PrioritySection extends StatelessWidget {
           child: Column(
             children: [
               Obx(() => _PriorityTile(
-                label: 'Priority 1',
-                value: priority1.value,
-                enabled: priority1Enabled.value,
-                onNetworkChanged: (v) => priority1.value = v!,
-                onEnabledChanged: (v) => priority1Enabled.value = v,
-              )),
+                    label: 'Priority 1',
+                    value: priority1.value,
+                    enabled: priority1Enabled.value,
+                    onNetworkChanged: (v) => priority1.value = v!,
+                    onEnabledChanged: (v) => priority1Enabled.value = v,
+                  )),
               Divider(height: 1, color: Colors.grey.shade100),
               Obx(() => _PriorityTile(
-                label: 'Priority 2',
-                value: priority2.value,
-                enabled: priority2Enabled.value,
-                onNetworkChanged: (v) => priority2.value = v!,
-                onEnabledChanged: (v) => priority2Enabled.value = v,
-              )),
+                    label: 'Priority 2',
+                    value: priority2.value,
+                    enabled: priority2Enabled.value,
+                    onNetworkChanged: (v) => priority2.value = v!,
+                    onEnabledChanged: (v) => priority2Enabled.value = v,
+                  )),
             ],
           ),
         ),
@@ -1444,6 +1454,165 @@ class _DropdownTile extends StatelessWidget {
           onChanged: onChanged,
         ),
       ],
+    );
+  }
+}
+
+class _OfflineAdsSection extends StatelessWidget {
+  final AdController c;
+  const _OfflineAdsSection({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return _AdCard(
+      title: 'Offline Playback Ads',
+      icon: Icons.offline_bolt_rounded,
+      color: Colors.blueAccent,
+      isEnabled: c.offlineAdsEnabled,
+      onToggle: (v) => c.offlineAdsEnabled.value = v,
+      children: [
+        // ── Ad Type Toggle ──
+        const Text(
+          'Ad Type',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Obx(() => Row(
+          children: [
+            Expanded(
+              child: _TypeButton(
+                label: '📺  Interstitial',
+                selected: c.offlineAdType.value == 'interstitial',
+                onTap: () => c.offlineAdType.value = 'interstitial',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _TypeButton(
+                label: '🎁  Rewarded',
+                selected: c.offlineAdType.value == 'rewarded',
+                onTap: () => c.offlineAdType.value = 'rewarded',
+              ),
+            ),
+          ],
+        )),
+        const SizedBox(height: 16),
+
+        // ── Maturity Timer ──
+        Obx(() => _SliderTile(
+          label: 'Ad maturity after download',
+          value: c.offlineMaturityMinutes.value.toDouble(),
+          min: 1,
+          max: 120,
+          divisions: 119,
+          displayText: '${c.offlineMaturityMinutes.value} min',
+          onChanged: (v) => c.offlineMaturityMinutes.value = v.round(),
+        )),
+        const SizedBox(height: 8),
+
+        // ── Session Cool Period ──
+        Obx(() => _SliderTile(
+          label: 'Session cool period',
+          value: c.offlineSessionCoolMinutes.value.toDouble(),
+          min: 1,
+          max: 120,
+          divisions: 119,
+          displayText: '${c.offlineSessionCoolMinutes.value} min',
+          onChanged: (v) =>
+              c.offlineSessionCoolMinutes.value = v.round(),
+        )),
+        const SizedBox(height: 8),
+
+        // ── Max Per Session ──
+        Obx(() => _SliderTile(
+          label: 'Max ads per session',
+          value: c.offlineMaxPerSession.value.toDouble(),
+          min: 1,
+          max: 10,
+          divisions: 9,
+          displayText: '${c.offlineMaxPerSession.value} ads',
+          onChanged: (v) => c.offlineMaxPerSession.value = v.round(),
+        )),
+        const SizedBox(height: 12),
+
+        // ── Priority ──
+        _PrioritySection(
+          priority1: c.offlinePriority1,
+          priority1Enabled: c.offlinePriority1Enabled,
+          priority2: c.offlinePriority2,
+          priority2Enabled: c.offlinePriority2Enabled,
+        ),
+
+        const SizedBox(height: 12),
+
+        // ── Info box ──
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color: Colors.blueAccent.withValues(alpha: 0.3)),
+          ),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 16, color: Colors.blueAccent),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Maturity timer starts when download completes.\n'
+                  'Session cool prevents repeated ads when user\n'
+                  'watches multiple episodes back to back.',
+                  style: TextStyle(
+                      fontSize: 11, color: Colors.blueAccent),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TypeButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TypeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? Colors.blueAccent : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected
+                ? Colors.blueAccent
+                : Colors.grey.shade300,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.grey.shade700,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }

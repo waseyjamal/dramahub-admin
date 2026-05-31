@@ -104,6 +104,17 @@ class AdController extends GetxController {
   final RxString downloadPriority2 = 'appodeal'.obs;
   final RxBool downloadPriority2Enabled = true.obs;
 
+  // ─── Offline Ads ──────────────────────────────────────────────────
+  final RxBool offlineAdsEnabled = false.obs;
+  final RxString offlineAdType = 'interstitial'.obs;
+  final RxInt offlineMaturityMinutes = 5.obs;
+  final RxInt offlineSessionCoolMinutes = 5.obs;
+  final RxInt offlineMaxPerSession = 3.obs;
+  final RxString offlinePriority1 = 'cas'.obs;
+  final RxBool offlinePriority1Enabled = true.obs;
+  final RxString offlinePriority2 = 'appodeal'.obs;
+  final RxBool offlinePriority2Enabled = true.obs;
+
   // ─── VAST ─────────────────────────────────────────────────────────
   final RxBool vastEnabled = false.obs;
   final RxInt vastSkipAfterSeconds = 5.obs;
@@ -199,6 +210,18 @@ class AdController extends GetxController {
       downloadPriority2.value = dl['priority_2'] ?? 'appodeal';
       downloadPriority2Enabled.value = dl['priority_2_enabled'] ?? true;
 
+      // Offline Ads
+      final offline = json['offline_ads'] as Map<String, dynamic>? ?? {};
+      offlineAdsEnabled.value = offline['enabled'] ?? false;
+      offlineAdType.value = offline['ad_type'] ?? 'interstitial';
+      offlineMaturityMinutes.value = offline['maturity_minutes'] ?? 5;
+      offlineSessionCoolMinutes.value = offline['session_cool_minutes'] ?? 5;
+      offlineMaxPerSession.value = offline['max_per_session'] ?? 3;
+      offlinePriority1.value = offline['priority_1'] ?? 'cas';
+      offlinePriority1Enabled.value = offline['priority_1_enabled'] ?? true;
+      offlinePriority2.value = offline['priority_2'] ?? 'appodeal';
+      offlinePriority2Enabled.value = offline['priority_2_enabled'] ?? true;
+
       // VAST
       final vast = json['vast'] as Map<String, dynamic>? ?? {};
       vastEnabled.value = vast['enabled'] ?? false;
@@ -274,6 +297,17 @@ class AdController extends GetxController {
           'priority_1_enabled': downloadPriority1Enabled.value,
           'priority_2': downloadPriority2.value,
           'priority_2_enabled': downloadPriority2Enabled.value,
+        },
+        'offline_ads': {
+          'enabled': offlineAdsEnabled.value,
+          'ad_type': offlineAdType.value,
+          'maturity_minutes': offlineMaturityMinutes.value,
+          'session_cool_minutes': offlineSessionCoolMinutes.value,
+          'max_per_session': offlineMaxPerSession.value,
+          'priority_1': offlinePriority1.value,
+          'priority_1_enabled': offlinePriority1Enabled.value,
+          'priority_2': offlinePriority2.value,
+          'priority_2_enabled': offlinePriority2Enabled.value,
         },
         'vast': {
           'enabled': vastEnabled.value,
