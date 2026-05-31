@@ -150,7 +150,7 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
                   _field(
                     streamUrl,
                     'Stream URL (.m3u8 from cdn.dramahubs.stream)',
-                    true,
+                    false,
                     hint:
                         'https://cdn.dramahubs.stream/videos/slug/ep-1/index.m3u8',
                   ),
@@ -276,6 +276,20 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
 
             final epNum = int.tryParse(episodeNumber.text) ?? 0;
             final isCustom = playerType == 'custom';
+
+            // ✅ Validate at least one of streamUrl or mp4Url provided
+            if (isCustom && 
+                streamUrl.text.trim().isEmpty && 
+                mp4Url.text.trim().isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Please provide either Stream URL (HLS) or MP4 URL'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
 
             final data = {
               'id': widget.existing?['id'] ??
