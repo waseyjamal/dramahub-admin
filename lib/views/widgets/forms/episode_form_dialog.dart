@@ -26,6 +26,7 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
   late TextEditingController streamUrl;
   late TextEditingController thumbnailImage;
   late TextEditingController downloadUrl;
+  late TextEditingController mp4Url;
   late TextEditingController durationMinutes;
   bool isPremium = false;
 
@@ -54,6 +55,7 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
     thumbnailImage =
         TextEditingController(text: existing?['thumbnailImage'] ?? '');
     downloadUrl = TextEditingController(text: existing?['downloadUrl'] ?? '');
+    mp4Url = TextEditingController(text: existing?['mp4Url'] ?? '');
     durationMinutes = TextEditingController(
         text: existing?['durationMinutes']?.toString() ?? '');
     isPremium = existing?['isPremium'] ?? false;
@@ -67,6 +69,7 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
     streamUrl.dispose();
     thumbnailImage.dispose();
     downloadUrl.dispose();
+    mp4Url.dispose();
     durationMinutes.dispose();
     super.dispose();
   }
@@ -155,8 +158,13 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
                 // Thumbnail
                 _field(thumbnailImage, 'Thumbnail Image URL', false),
 
-                // Download URL
-                _field(downloadUrl, 'Download URL', false),
+                // MP4 URL — for in-app streaming and download
+                _field(
+                  mp4Url,
+                  'MP4 URL (for in-app download)',
+                  false,
+                  hint: 'https://cdn.dramahubs.stream/drama/ep-1/ep-1.mp4',
+                ),
 
                 // Duration
                 _field(
@@ -280,6 +288,7 @@ class _EpisodeFormDialogState extends State<EpisodeFormDialog> {
               'streamUrl': isCustom ? streamUrl.text.trim() : '',
               'thumbnailImage': thumbnailImage.text.trim(),
               'downloadUrl': downloadUrl.text.trim(),
+              'mp4Url': mp4Url.text.trim(),
               'durationMinutes': int.tryParse(durationMinutes.text) ?? 0,
               'isPremium': isPremium,
               'releaseDate': isScheduled && scheduledDate != null

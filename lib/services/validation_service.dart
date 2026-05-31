@@ -19,8 +19,14 @@ class ValidationService {
 
     final isCustom = json['playerType'] == 'custom';
     if (isCustom) {
-      if (json['streamUrl'] == null || json['streamUrl'].toString().isEmpty) {
-        errors.add('streamUrl is required for custom player.');
+      // ✅ Either streamUrl OR mp4Url is acceptable for custom player
+      final hasStream = json['streamUrl'] != null &&
+          json['streamUrl'].toString().isNotEmpty;
+      final hasMp4 = json['mp4Url'] != null &&
+          json['mp4Url'].toString().isNotEmpty;
+      if (!hasStream && !hasMp4) {
+        errors.add(
+            'Custom player requires either streamUrl (HLS) or mp4Url (MP4).');
       }
     } else {
       if (json['videoId'] == null || json['videoId'].toString().isEmpty) {
