@@ -22,6 +22,8 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
   late TextEditingController genre;
   late TextEditingController rating;
   late TextEditingController releaseYear;
+  late TextEditingController premiereDate;
+  late bool isComingSoon;
 
   @override
   void initState() {
@@ -39,6 +41,23 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
         text: widget.existing?['rating']?.toString() ?? '0');
     releaseYear = TextEditingController(
         text: widget.existing?['releaseYear']?.toString() ?? '2024');
+    premiereDate = TextEditingController(
+        text: widget.existing?['premiereDate'] ?? '');
+    isComingSoon = widget.existing?['isComingSoon'] ?? false;
+  }
+
+  @override
+  void dispose() {
+    id.dispose();
+    title.dispose();
+    description.dispose();
+    posterImage.dispose();
+    bannerImage.dispose();
+    genre.dispose();
+    rating.dispose();
+    releaseYear.dispose();
+    premiereDate.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,7 +76,7 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _field(id, 'ID (e.g. arafta)', isEdit ? false : true),
+                _field(id, 'ID (e.g. AraftaHindi)', isEdit ? false : true),
                 _field(title, 'Title', true),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -79,6 +98,61 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
                 _field(genre, 'Genre', false),
                 _field(rating, 'Rating (0-10)', false),
                 _field(releaseYear, 'Release Year', false),
+
+                // Coming Soon toggle
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: StatefulBuilder(
+                      builder: (context, setInner) => SwitchListTile(
+                        title: const Text('Coming Soon'),
+                        subtitle: const Text(
+                          'Drama appears in Coming Soon section only — hidden from All Dramas',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        value: isComingSoon,
+                        activeColor: Colors.redAccent,
+                        onChanged: (val) {
+                          setInner(() => isComingSoon = val);
+                          setState(() => isComingSoon = val);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Premiere Date — only shown when Coming Soon is ON
+                if (isComingSoon)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: TextFormField(
+                      controller: premiereDate,
+                      decoration: const InputDecoration(
+                        labelText: 'Premiere Date (YYYY-MM-DD)',
+                        hintText: 'e.g. 2026-07-15',
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                      onTap: () async {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2030),
+                        );
+                        if (picked != null) {
+                          premiereDate.text =
+                              '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                        }
+                      },
+                    ),
+                  ),
               ],
             ),
           ),
@@ -105,6 +179,8 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
               'totalEpisodes': widget.existing?['totalEpisodes'] ?? 0,
               'isActive': widget.existing?['isActive'] ?? true,
               'order': widget.existing?['order'] ?? 0,
+              'isComingSoon': isComingSoon,
+              'premiereDate': isComingSoon ? premiereDate.text.trim() : null,
             };
 
             if (isEdit && widget.index != null) {
