@@ -140,16 +140,26 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
                       ),
                       onTap: () async {
                         FocusScope.of(context).requestFocus(FocusNode());
-                        final picked = await showDatePicker(
+                        final pickedDate = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
                           lastDate: DateTime(2030),
                         );
-                        if (picked != null) {
-                          premiereDate.text =
-                              '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                        }
+                        if (pickedDate == null) return;
+                        final pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (pickedTime == null) return;
+                        final full = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+                        premiereDate.text = full.toIso8601String();
                       },
                     ),
                   ),
