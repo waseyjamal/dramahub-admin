@@ -175,7 +175,7 @@ class _AppOpenSection extends StatelessWidget {
         Obx(() => _DropdownTile(
               label: 'Provider',
               value: c.appOpenProvider.value,
-              options: const ['cas', 'appodeal'],
+              options: const ['liftoff', 'cas'],
               onChanged: (v) => c.appOpenProvider.value = v!,
             )),
         const SizedBox(height: 12),
@@ -1071,7 +1071,7 @@ class _WaterfallStatusCard extends StatelessWidget {
         mode = 'All Ads Disabled';
         color = Colors.red;
         icon = Icons.block_rounded;
-      } else if (!c.appodealEnabled.value && !c.casEnabled.value) {
+      } else if (!c.levelplayEnabled.value && !c.casEnabled.value) {
         mode = 'All Networks Disabled';
         color = Colors.red;
         icon = Icons.block_rounded;
@@ -1189,11 +1189,11 @@ class _AdNetworksSection extends StatelessWidget {
             child: Column(
               children: [
                 Obx(() => _NetworkToggleTile(
-                      name: 'Appodeal',
-                      subtitle: 'Primary mediation network',
-                      value: c.appodealEnabled.value,
+                      name: 'LevelPlay',
+                      subtitle: 'Primary mediation network (IronSource)',
+                      value: c.levelplayEnabled.value,
                       color: Colors.deepPurple,
-                      onChanged: (v) => c.appodealEnabled.value = v,
+                      onChanged: (v) => c.levelplayEnabled.value = v,
                     )),
                 const SizedBox(height: 8),
                 Obx(() => _NetworkToggleTile(
@@ -1389,7 +1389,7 @@ class _PriorityTile extends StatelessWidget {
                 isDense: true,
               ),
               items: const [
-                DropdownMenuItem(value: 'appodeal', child: Text('Appodeal')),
+                DropdownMenuItem(value: 'levelplay', child: Text('LevelPlay')),
                 DropdownMenuItem(value: 'cas', child: Text('CAS.AI')),
               ],
               onChanged: onNetworkChanged,

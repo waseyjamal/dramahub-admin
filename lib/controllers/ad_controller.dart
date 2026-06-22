@@ -23,20 +23,20 @@ class AdController extends GetxController {
   final appOpenAdUnitId = TextEditingController();
 
   // ─── Ad Networks ──────────────────────────────────────────────────
-  final RxBool appodealEnabled = true.obs;
-  final RxBool casEnabled = true.obs;
+  final RxBool levelplayEnabled = true.obs;
+  final RxBool casEnabled = false.obs;
 
   // ─── App Open Provider ────────────────────────────────────────────
-  final RxString appOpenProvider = 'cas'.obs;
+  final RxString appOpenProvider = 'liftoff'.obs;
 
   // ─── Interstitial Priority ────────────────────────────────────────
-  final RxString interstitialPriority1 = 'appodeal'.obs;
+  final RxString interstitialPriority1 = 'levelplay'.obs;
   final RxBool interstitialPriority1Enabled = true.obs;
   final RxString interstitialPriority2 = 'cas'.obs;
   final RxBool interstitialPriority2Enabled = false.obs;
 
   // ─── Rewarded Priority ────────────────────────────────────────────
-  final RxString rewardedPriority1 = 'appodeal'.obs;
+  final RxString rewardedPriority1 = 'levelplay'.obs;
   final RxBool rewardedPriority1Enabled = true.obs;
   final RxString rewardedPriority2 = 'cas'.obs;
   final RxBool rewardedPriority2Enabled = false.obs;
@@ -99,10 +99,10 @@ class AdController extends GetxController {
   final RxBool downloadEnabled = true.obs;
   final RxInt downloadCooldownSeconds = 120.obs;
   final RxInt downloadMaxPerSession = 3.obs;
-  final RxString downloadPriority1 = 'cas'.obs;
+  final RxString downloadPriority1 = 'levelplay'.obs;
   final RxBool downloadPriority1Enabled = true.obs;
-  final RxString downloadPriority2 = 'appodeal'.obs;
-  final RxBool downloadPriority2Enabled = true.obs;
+  final RxString downloadPriority2 = 'cas'.obs;
+  final RxBool downloadPriority2Enabled = false.obs;
 
   // ─── Offline Ads ──────────────────────────────────────────────────
   final RxBool offlineAdsEnabled = false.obs;
@@ -110,10 +110,10 @@ class AdController extends GetxController {
   final RxInt offlineMaturityMinutes = 5.obs;
   final RxInt offlineSessionCoolMinutes = 5.obs;
   final RxInt offlineMaxPerSession = 3.obs;
-  final RxString offlinePriority1 = 'cas'.obs;
+  final RxString offlinePriority1 = 'levelplay'.obs;
   final RxBool offlinePriority1Enabled = true.obs;
-  final RxString offlinePriority2 = 'appodeal'.obs;
-  final RxBool offlinePriority2Enabled = true.obs;
+  final RxString offlinePriority2 = 'cas'.obs;
+  final RxBool offlinePriority2Enabled = false.obs;
 
   // ─── VAST ─────────────────────────────────────────────────────────
   final RxBool vastEnabled = false.obs;
@@ -150,8 +150,8 @@ class AdController extends GetxController {
 
       // Ad Networks
       final adNetworks = json['ad_networks'] as Map<String, dynamic>? ?? {};
-      appodealEnabled.value = adNetworks['appodeal_enabled'] ?? true;
-      casEnabled.value = adNetworks['cas_enabled'] ?? true;
+      levelplayEnabled.value = adNetworks['levelplay_enabled'] ?? true;
+      casEnabled.value = adNetworks['cas_enabled'] ?? false;
 
       // App Open
       final appOpen = json['app_open'] as Map<String, dynamic>? ?? {};
@@ -166,7 +166,7 @@ class AdController extends GetxController {
       interstitialCooldownSeconds.value = inter['cooldown_seconds'] ?? 30;
       interstitialMaxPerSession.value = inter['max_per_session'] ?? 3;
       interstitialAdUnitId.text = inter['ad_unit_id'] ?? '';
-      interstitialPriority1.value = inter['priority_1'] ?? 'appodeal';
+      interstitialPriority1.value = inter['priority_1'] ?? 'levelplay';
       interstitialPriority1Enabled.value = inter['priority_1_enabled'] ?? true;
       interstitialPriority2.value = inter['priority_2'] ?? 'cas';
       interstitialPriority2Enabled.value = inter['priority_2_enabled'] ?? false;
@@ -181,7 +181,7 @@ class AdController extends GetxController {
       rewardedCooldownSeconds.value = rew['cooldown_seconds'] ?? 30;
       rewardedMaxPerSession.value = rew['max_per_session'] ?? 5;
       rewardedAdUnitId.text = rew['ad_unit_id'] ?? '';
-      rewardedPriority1.value = rew['priority_1'] ?? 'appodeal';
+      rewardedPriority1.value = rew['priority_1'] ?? 'levelplay';
       rewardedPriority1Enabled.value = rew['priority_1_enabled'] ?? true;
       rewardedPriority2.value = rew['priority_2'] ?? 'cas';
       rewardedPriority2Enabled.value = rew['priority_2_enabled'] ?? false;
@@ -205,10 +205,10 @@ class AdController extends GetxController {
       downloadEnabled.value = dl['enabled'] ?? true;
       downloadCooldownSeconds.value = dl['cooldown_seconds'] ?? 120;
       downloadMaxPerSession.value = dl['max_per_session'] ?? 3;
-      downloadPriority1.value = dl['priority_1'] ?? 'cas';
+      downloadPriority1.value = dl['priority_1'] ?? 'levelplay';
       downloadPriority1Enabled.value = dl['priority_1_enabled'] ?? true;
-      downloadPriority2.value = dl['priority_2'] ?? 'appodeal';
-      downloadPriority2Enabled.value = dl['priority_2_enabled'] ?? true;
+      downloadPriority2.value = dl['priority_2'] ?? 'cas';
+      downloadPriority2Enabled.value = dl['priority_2_enabled'] ?? false;
 
       // Offline Ads
       final offline = json['offline_ads'] as Map<String, dynamic>? ?? {};
@@ -217,10 +217,10 @@ class AdController extends GetxController {
       offlineMaturityMinutes.value = offline['maturity_minutes'] ?? 5;
       offlineSessionCoolMinutes.value = offline['session_cool_minutes'] ?? 5;
       offlineMaxPerSession.value = offline['max_per_session'] ?? 3;
-      offlinePriority1.value = offline['priority_1'] ?? 'cas';
+      offlinePriority1.value = offline['priority_1'] ?? 'levelplay';
       offlinePriority1Enabled.value = offline['priority_1_enabled'] ?? true;
-      offlinePriority2.value = offline['priority_2'] ?? 'appodeal';
-      offlinePriority2Enabled.value = offline['priority_2_enabled'] ?? true;
+      offlinePriority2.value = offline['priority_2'] ?? 'cas';
+      offlinePriority2Enabled.value = offline['priority_2_enabled'] ?? false;
 
       // VAST
       final vast = json['vast'] as Map<String, dynamic>? ?? {};
@@ -252,7 +252,7 @@ class AdController extends GetxController {
       final data = {
         'ads_enabled': adsEnabled.value,
         'ad_networks': {
-          'appodeal_enabled': appodealEnabled.value,
+          'levelplay_enabled': levelplayEnabled.value,
           'cas_enabled': casEnabled.value,
         },
         'app_open': {
