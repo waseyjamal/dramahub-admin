@@ -63,10 +63,7 @@ class AdController extends GetxController {
     'watchlist_screen': false,
     'history_screen': false,
     'download_screen': false,
-    'profile_screen': false,
-    'premium_screen': false,
     'suggest_drama_screen': false,
-    'rate_app_screen': false,
     'report_problem_screen': false,
   }.obs;
 
@@ -84,10 +81,7 @@ class AdController extends GetxController {
     'watchlist_screen': false,
     'history_screen': false,
     'download_screen': false,
-    'profile_screen': false,
-    'premium_screen': false,
     'suggest_drama_screen': false,
-    'rate_app_screen': false,
     'report_problem_screen': false,
   }.obs;
 
@@ -100,7 +94,7 @@ class AdController extends GetxController {
     'episodes_screen': false,
     'watchlist_screen': false,
     'history_screen': false,
-    'download_screen': false,
+    'upcoming_screen': false,
   }.obs;
 
   // ─── Download ─────────────────────────────────────────────────────
@@ -187,7 +181,9 @@ class AdController extends GetxController {
       interstitialPriority2Enabled.value = inter['priority_2_enabled'] ?? false;
       final interScreens = inter['screens'] as Map<String, dynamic>? ?? {};
       interScreens.forEach((k, v) {
-        interstitialScreens[k] = v as bool? ?? false;
+        if (interstitialScreens.containsKey(k)) {
+          interstitialScreens[k] = v as bool? ?? false;
+        }
       });
 
       // Rewarded
@@ -205,7 +201,9 @@ class AdController extends GetxController {
       rewardedPriority2Enabled.value = rew['priority_2_enabled'] ?? false;
       final rewScreens = rew['screens'] as Map<String, dynamic>? ?? {};
       rewScreens.forEach((k, v) {
-        rewardedScreens[k] = v as bool? ?? false;
+        if (rewardedScreens.containsKey(k)) {
+          rewardedScreens[k] = v as bool? ?? false;
+        }
       });
 
       // Native
@@ -215,7 +213,9 @@ class AdController extends GetxController {
       nativeAdUnitId.text = nat['ad_unit_id'] ?? '';
       final natScreens = nat['screens'] as Map<String, dynamic>? ?? {};
       natScreens.forEach((k, v) {
-        nativeScreens[k] = v as bool? ?? false;
+        if (nativeScreens.containsKey(k)) {
+          nativeScreens[k] = v as bool? ?? false;
+        }
       });
 
       // Download
