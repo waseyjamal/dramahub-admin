@@ -191,6 +191,9 @@ class _DramaFormDialogState extends State<DramaFormDialog> {
               'order': widget.existing?['order'] ?? 0,
               'isComingSoon': isComingSoon,
               'premiereDate': isComingSoon ? premiereDate.text.trim() : null,
+              'addedOn': isEdit
+                  ? (widget.existing?['addedOn'] ?? DateTime.now().toUtc().toIso8601String())
+                  : DateTime.now().toUtc().toIso8601String(),
             };
 
             if (isEdit && widget.index != null) {

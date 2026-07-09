@@ -1,3 +1,9 @@
+// ADMIN APP: ad_controller.dart
+// ✅ casEnabled → yandexEnabled
+// ✅ All 'cas' default strings → 'yandex'
+// ✅ CAS.AI label → Yandex in waterfall status
+// ✅ Save/load JSON: cas_enabled → yandex_enabled, 'cas' → 'yandex'
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/github_service.dart';
@@ -17,28 +23,30 @@ class AdController extends GetxController {
   // ─── Global ───────────────────────────────────────────────────────
   final RxBool adsEnabled = true.obs;
 
-  // ─── App Open ─────────────────────────────────────────────────────
-  final RxBool appOpenEnabled = true.obs;
-  final RxInt appOpenCooldownHours = 4.obs;
-  final appOpenAdUnitId = TextEditingController();
-
   // ─── Ad Networks ──────────────────────────────────────────────────
   final RxBool levelplayEnabled = true.obs;
-  final RxBool casEnabled = false.obs;
+  // ✅ casEnabled → yandexEnabled
+  final RxBool yandexEnabled = false.obs;
 
-  // ─── App Open Provider ────────────────────────────────────────────
-  final RxString appOpenProvider = 'liftoff'.obs;
+  // ─── App Open ─────────────────────────────────────────────────────
+  final RxBool appOpenEnabled = false.obs;
+  final RxInt appOpenCooldownHours = 4.obs;
+  final appOpenAdUnitId = TextEditingController();
+  // ✅ default provider → 'yandex'
+  final RxString appOpenProvider = 'yandex'.obs;
 
   // ─── Interstitial Priority ────────────────────────────────────────
   final RxString interstitialPriority1 = 'levelplay'.obs;
   final RxBool interstitialPriority1Enabled = true.obs;
-  final RxString interstitialPriority2 = 'cas'.obs;
+  // ✅ 'cas' → 'yandex'
+  final RxString interstitialPriority2 = 'yandex'.obs;
   final RxBool interstitialPriority2Enabled = false.obs;
 
   // ─── Rewarded Priority ────────────────────────────────────────────
   final RxString rewardedPriority1 = 'levelplay'.obs;
   final RxBool rewardedPriority1Enabled = true.obs;
-  final RxString rewardedPriority2 = 'cas'.obs;
+  // ✅ 'cas' → 'yandex'
+  final RxString rewardedPriority2 = 'yandex'.obs;
   final RxBool rewardedPriority2Enabled = false.obs;
 
   // ─── Interstitial ─────────────────────────────────────────────────
@@ -101,7 +109,8 @@ class AdController extends GetxController {
   final RxInt downloadMaxPerSession = 3.obs;
   final RxString downloadPriority1 = 'levelplay'.obs;
   final RxBool downloadPriority1Enabled = true.obs;
-  final RxString downloadPriority2 = 'cas'.obs;
+  // ✅ 'cas' → 'yandex'
+  final RxString downloadPriority2 = 'yandex'.obs;
   final RxBool downloadPriority2Enabled = false.obs;
 
   // ─── Offline Ads ──────────────────────────────────────────────────
@@ -112,7 +121,8 @@ class AdController extends GetxController {
   final RxInt offlineMaxPerSession = 3.obs;
   final RxString offlinePriority1 = 'levelplay'.obs;
   final RxBool offlinePriority1Enabled = true.obs;
-  final RxString offlinePriority2 = 'cas'.obs;
+  // ✅ 'cas' → 'yandex'
+  final RxString offlinePriority2 = 'yandex'.obs;
   final RxBool offlinePriority2Enabled = false.obs;
 
   // ─── VAST ─────────────────────────────────────────────────────────
@@ -120,7 +130,8 @@ class AdController extends GetxController {
   final RxInt vastSkipAfterSeconds = 5.obs;
   final RxInt vastMaxPerSession = 3.obs;
   final RxInt vastGapBetweenAdsMinutes = 10.obs;
-  final RxList<Map<String, dynamic>> vastWaterfall = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> vastWaterfall =
+      <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
@@ -151,24 +162,28 @@ class AdController extends GetxController {
       // Ad Networks
       final adNetworks = json['ad_networks'] as Map<String, dynamic>? ?? {};
       levelplayEnabled.value = adNetworks['levelplay_enabled'] ?? true;
-      casEnabled.value = adNetworks['cas_enabled'] ?? false;
+      // ✅ Read yandex_enabled (falls back gracefully if old JSON has only cas_enabled)
+      yandexEnabled.value = adNetworks['yandex_enabled'] ?? false;
 
       // App Open
       final appOpen = json['app_open'] as Map<String, dynamic>? ?? {};
-      appOpenEnabled.value = appOpen['enabled'] ?? true;
+      appOpenEnabled.value = appOpen['enabled'] ?? false;
       appOpenCooldownHours.value = appOpen['cooldown_hours'] ?? 4;
       appOpenAdUnitId.text = appOpen['ad_unit_id'] ?? '';
-      appOpenProvider.value = appOpen['provider'] ?? 'cas';
+      appOpenProvider.value = appOpen['provider'] ?? 'yandex';
 
       // Interstitial
       final inter = json['interstitial'] as Map<String, dynamic>? ?? {};
       interstitialEnabled.value = inter['enabled'] ?? true;
       interstitialCooldownSeconds.value = inter['cooldown_seconds'] ?? 30;
-      interstitialMaxPerSession.value = inter['max_per_session'] ?? 3;
+      interstitialMaxPerSession.value = inter['max_per_session'] ?? 8;
       interstitialAdUnitId.text = inter['ad_unit_id'] ?? '';
       interstitialPriority1.value = inter['priority_1'] ?? 'levelplay';
       interstitialPriority1Enabled.value = inter['priority_1_enabled'] ?? true;
-      interstitialPriority2.value = inter['priority_2'] ?? 'cas';
+      // ✅ Falls back to 'yandex' if JSON still has old 'cas' value
+      interstitialPriority2.value = (inter['priority_2'] == 'cas')
+          ? 'yandex'
+          : (inter['priority_2'] ?? 'yandex');
       interstitialPriority2Enabled.value = inter['priority_2_enabled'] ?? false;
       final interScreens = inter['screens'] as Map<String, dynamic>? ?? {};
       interScreens.forEach((k, v) {
@@ -183,7 +198,10 @@ class AdController extends GetxController {
       rewardedAdUnitId.text = rew['ad_unit_id'] ?? '';
       rewardedPriority1.value = rew['priority_1'] ?? 'levelplay';
       rewardedPriority1Enabled.value = rew['priority_1_enabled'] ?? true;
-      rewardedPriority2.value = rew['priority_2'] ?? 'cas';
+      // ✅ Falls back to 'yandex' if JSON still has old 'cas' value
+      rewardedPriority2.value = (rew['priority_2'] == 'cas')
+          ? 'yandex'
+          : (rew['priority_2'] ?? 'yandex');
       rewardedPriority2Enabled.value = rew['priority_2_enabled'] ?? false;
       final rewScreens = rew['screens'] as Map<String, dynamic>? ?? {};
       rewScreens.forEach((k, v) {
@@ -207,7 +225,10 @@ class AdController extends GetxController {
       downloadMaxPerSession.value = dl['max_per_session'] ?? 3;
       downloadPriority1.value = dl['priority_1'] ?? 'levelplay';
       downloadPriority1Enabled.value = dl['priority_1_enabled'] ?? true;
-      downloadPriority2.value = dl['priority_2'] ?? 'cas';
+      // ✅ Falls back to 'yandex' if JSON still has old 'cas' value
+      downloadPriority2.value = (dl['priority_2'] == 'cas')
+          ? 'yandex'
+          : (dl['priority_2'] ?? 'yandex');
       downloadPriority2Enabled.value = dl['priority_2_enabled'] ?? false;
 
       // Offline Ads
@@ -219,7 +240,10 @@ class AdController extends GetxController {
       offlineMaxPerSession.value = offline['max_per_session'] ?? 3;
       offlinePriority1.value = offline['priority_1'] ?? 'levelplay';
       offlinePriority1Enabled.value = offline['priority_1_enabled'] ?? true;
-      offlinePriority2.value = offline['priority_2'] ?? 'cas';
+      // ✅ Falls back to 'yandex' if JSON still has old 'cas' value
+      offlinePriority2.value = (offline['priority_2'] == 'cas')
+          ? 'yandex'
+          : (offline['priority_2'] ?? 'yandex');
       offlinePriority2Enabled.value = offline['priority_2_enabled'] ?? false;
 
       // VAST
@@ -253,10 +277,12 @@ class AdController extends GetxController {
         'ads_enabled': adsEnabled.value,
         'ad_networks': {
           'levelplay_enabled': levelplayEnabled.value,
-          'cas_enabled': casEnabled.value,
+          // ✅ Saves yandex_enabled (NOT cas_enabled)
+          'yandex_enabled': yandexEnabled.value,
         },
         'app_open': {
           'enabled': appOpenEnabled.value,
+          // ✅ provider saves 'yandex' not 'cas'
           'provider': appOpenProvider.value,
           'cooldown_hours': appOpenCooldownHours.value,
           'ad_unit_id': appOpenAdUnitId.text.trim(),
