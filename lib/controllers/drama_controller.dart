@@ -115,6 +115,21 @@ class DramaController extends GetxController {
     await _commit('Sync totalEpisodes for $dramaId');
   }
 
+  Future<void> updateLatestEpisodeInfo(
+    String dramaId,
+    int episodeNumber,
+    String episodeDate,
+  ) async {
+    if (dramas.isEmpty) return;
+    final index = dramas.indexWhere((d) => d['id'] == dramaId);
+    if (index == -1) return;
+
+    dramas[index]['latest_episode_number'] = episodeNumber;
+    dramas[index]['latest_episode_date'] = episodeDate;
+    dramas.refresh();
+    await _commit('Sync latest episode info for $dramaId');
+  }
+
   Future<void> _commit(String message) async {
     try {
       final snapshot = dramas.map((e) => Map<String, dynamic>.from(e)).toList();

@@ -74,6 +74,7 @@ class EpisodeController extends GetxController {
     _sortDescending();
     await _commit('Add episode ${episode['episodeNumber']}');
     _syncTotal();
+    await _syncLatestEpisodeInfo(episode);
   }
 
   Future<void> updateEpisode(int index, Map<String, dynamic> updated) async {
@@ -96,6 +97,10 @@ class EpisodeController extends GetxController {
 
     _sortDescending();
     await _commit('Update episode ${updated['episodeNumber']}');
+    if (episodes.isNotEmpty &&
+        updated['episodeNumber'] == episodes.first['episodeNumber']) {
+      await _syncLatestEpisodeInfo(updated);
+    }
   }
 
   Future<void> deleteEpisode(int index) async {
@@ -122,5 +127,21 @@ class EpisodeController extends GetxController {
   void _syncTotal() {
     if (currentDramaId == null) return;
     _dramaController.updateTotalEpisodes(currentDramaId!, episodes.length);
+  }
+
+  Future<void> _syncLatestEpisodeInfo(Map<String, dynamic> episode) async {
+    if (currentDramaId == null) return;
+    final epNumber = episode['episodeNumber'] as int? ?? 0;
+    final epDate = episode['releaseDate'] as String? ??
+        DateTime.now().toUtc().toIso8601String();
+    try {
+      await _dramaController.updateLatestEpisodeInfo(
+        currentDramaId!,
+        epNumber,
+        epDate,
+      );
+    } catch (e) {
+      errorMessage.value = 'Episode saved but failed to sync drama info: $e';
+    }
   }
 }
