@@ -1302,13 +1302,13 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                 Obx(() {
                   final dramas = Get.find<DramaController>().dramas;
                   return DropdownButtonFormField<String>(
-                    value: _selectedDramaId.isNotEmpty && dramas.any((d) => d.id == _selectedDramaId)
+                    value: _selectedDramaId.isNotEmpty && dramas.any((d) => d['id'] == _selectedDramaId)
                         ? _selectedDramaId
                         : null,
                     decoration: _inputDecoration('Select Drama'),
                     dropdownColor: const Color(0xFF1A1A2E),
                     items: dramas
-                        .map((d) => DropdownMenuItem(value: d.id, child: Text(d.title)))
+                        .map((d) => DropdownMenuItem(value: d['id'] as String?, child: Text(d['title'] as String? ?? '')))
                         .toList(),
                     onChanged: (v) => setState(() => _selectedDramaId = v ?? ''),
                   );
