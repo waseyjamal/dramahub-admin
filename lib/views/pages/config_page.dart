@@ -26,7 +26,7 @@ class ConfigPage extends StatelessWidget {
               // ✅ Build otherEntries INSIDE Obx so it reacts to config changes
               final allEntries = controller.config.entries.toList();
               final otherEntries = allEntries
-                  .where((e) => !['hero_slider_dramas', 'data_version', 'cdn_base', 'instagram_url', 'website_url', 'fallback_update'].contains(e.key))
+                  .where((e) => !['hero_slider_dramas', 'data_version', 'cdn_base', 'instagram_url', 'website_url', 'fallback_update', 'announcement'].contains(e.key))
                   .toList();
 
               return ListView(
@@ -68,6 +68,9 @@ class ConfigPage extends StatelessWidget {
 
                   // Fallback Update Card
                   _FallbackUpdateCard(controller: controller),
+
+                  // Announcement Card
+                  _AnnouncementCard(controller: controller),
 
                   // All other config entries
                   if (otherEntries.isEmpty)
@@ -1063,6 +1066,305 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Announcement Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _AnnouncementCard extends StatefulWidget {
+  final ConfigController controller;
+  const _AnnouncementCard({required this.controller});
+
+  @override
+  State<_AnnouncementCard> createState() => _AnnouncementCardState();
+}
+
+class _AnnouncementCardState extends State<_AnnouncementCard> {
+  final _idCtrl = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _messageCtrl = TextEditingController();
+  final _imageCtrl = TextEditingController();
+  final _actionLabelCtrl = TextEditingController();
+  final _actionUrlCtrl = TextEditingController();
+  final _episodeCtrl = TextEditingController();
+
+  String _selectedType = 'general';
+  String _selectedDramaId = '';
+  bool _enabled = false;
+  bool _showOnce = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFromConfig();
+  }
+
+  void _initFromConfig() {
+    final raw = widget.controller.config['announcement'];
+    if (raw is! Map<String, dynamic>) return;
+    final a = raw;
+    _idCtrl.text = (a['id'] as String?) ?? '';
+    _titleCtrl.text = (a['title'] as String?) ?? '';
+    _messageCtrl.text = (a['message'] as String?) ?? '';
+    _imageCtrl.text = (a['image_url'] as String?) ?? '';
+    _actionLabelCtrl.text = (a['action_label'] as String?) ?? '';
+    _actionUrlCtrl.text = (a['action_url'] as String?) ?? '';
+    _episodeCtrl.text = (a['action_episode_number'] != null)
+        ? a['action_episode_number'].toString()
+        : '';
+    _selectedType = (a['type'] as String?) ?? 'general';
+    _selectedDramaId = (a['action_drama_id'] as String?) ?? '';
+    _enabled = (a['enabled'] as bool?) ?? false;
+    _showOnce = (a['show_once'] as bool?) ?? true;
+  }
+
+  String _generateNewId() {
+    final ts = (DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    return 'ann_$ts';
+  }
+
+  Map<String, dynamic> _buildMap() {
+    final map = <String, dynamic>{
+      'id': _idCtrl.text.trim(),
+      'enabled': _enabled,
+      'type': _selectedType,
+      'show_once': _showOnce,
+    };
+    if (_titleCtrl.text.trim().isNotEmpty) map['title'] = _titleCtrl.text.trim();
+    if (_messageCtrl.text.trim().isNotEmpty) map['message'] = _messageCtrl.text.trim();
+    if (_imageCtrl.text.trim().isNotEmpty) map['image_url'] = _imageCtrl.text.trim();
+    if (_actionLabelCtrl.text.trim().isNotEmpty) map['action_label'] = _actionLabelCtrl.text.trim();
+    if (_selectedType == 'general') {
+      if (_actionUrlCtrl.text.trim().isNotEmpty) map['action_url'] = _actionUrlCtrl.text.trim();
+    } else {
+      if (_selectedDramaId.isNotEmpty) map['action_drama_id'] = _selectedDramaId;
+      final ep = int.tryParse(_episodeCtrl.text.trim());
+      if (ep != null) map['action_episode_number'] = ep;
+    }
+    return map;
+  }
+
+  Future<void> _save() async {
+    if (_idCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter or generate an announcement ID')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await widget.controller.updateField('announcement', _buildMap());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Announcement saved!')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  InputDecoration _inputDecoration(String label, {String? hint}) => InputDecoration(
+        labelText: label,
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey.shade900,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: const TextStyle(color: Colors.teal),
+      );
+
+  Widget _fieldLabel(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 6, top: 12),
+        child: Text(text, style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w600)),
+      );
+
+  @override
+  void dispose() {
+    _idCtrl.dispose();
+    _titleCtrl.dispose();
+    _messageCtrl.dispose();
+    _imageCtrl.dispose();
+    _actionLabelCtrl.dispose();
+    _actionUrlCtrl.dispose();
+    _episodeCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      // Re-sync if config reloaded externally
+      final raw = widget.controller.config['announcement'];
+      return Card(
+        color: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──
+              Row(
+                children: [
+                  const Icon(Icons.campaign_rounded, color: Colors.teal),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Announcement Popup',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: _enabled,
+                    activeColor: Colors.teal,
+                    onChanged: (v) => setState(() => _enabled = v),
+                  ),
+                  Text(_enabled ? 'Enabled' : 'Disabled',
+                      style: TextStyle(color: _enabled ? Colors.teal : Colors.grey)),
+                ],
+              ),
+              const Divider(color: Colors.teal),
+
+              // ── Type ──
+              _fieldLabel('Announcement Type'),
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: _inputDecoration('Type'),
+                dropdownColor: const Color(0xFF1A1A2E),
+                items: const [
+                  DropdownMenuItem(value: 'general', child: Text('General')),
+                  DropdownMenuItem(value: 'new_drama', child: Text('New Drama')),
+                  DropdownMenuItem(value: 'new_episode', child: Text('New Episode')),
+                ],
+                onChanged: (v) => setState(() => _selectedType = v ?? 'general'),
+              ),
+
+              // ── Show Once ──
+              Row(
+                children: [
+                  Checkbox(
+                    value: _showOnce,
+                    activeColor: Colors.teal,
+                    onChanged: (v) => setState(() => _showOnce = v ?? true),
+                  ),
+                  const Text('Show only once per user', style: TextStyle(color: Colors.white70)),
+                ],
+              ),
+
+              // ── ID ──
+              _fieldLabel('Announcement ID (required — change to re-trigger)'),
+              Row(
+                children: [
+                  Expanded(child: TextField(controller: _idCtrl, decoration: _inputDecoration('ID', hint: 'ann_1234567890'))),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800),
+                    onPressed: () => setState(() => _idCtrl.text = _generateNewId()),
+                    child: const Text('Generate'),
+                  ),
+                ],
+              ),
+
+              // ── Optional Content ──
+              _fieldLabel('Title (optional)'),
+              TextField(controller: _titleCtrl, decoration: _inputDecoration('Title')),
+
+              _fieldLabel('Message (optional)'),
+              TextField(
+                controller: _messageCtrl,
+                maxLines: 4,
+                decoration: _inputDecoration('Message', hint: 'Supports emojis and line breaks'),
+              ),
+
+              _fieldLabel('Banner Image URL (optional)'),
+              TextField(controller: _imageCtrl, decoration: _inputDecoration('Image URL')),
+
+              _fieldLabel('Button Label (optional)'),
+              TextField(controller: _actionLabelCtrl, decoration: _inputDecoration('Button Label', hint: 'e.g. Join Telegram')),
+
+              // ── Type-specific action fields ──
+              if (_selectedType == 'general') ...[
+                _fieldLabel('Button URL (optional — General type only)'),
+                TextField(
+                  controller: _actionUrlCtrl,
+                  decoration: _inputDecoration('URL', hint: 'https://, http://, or tg://'),
+                ),
+              ] else ...[
+                _fieldLabel('Drama (optional)'),
+                Obx(() {
+                  final dramas = Get.find<DramaController>().dramas;
+                  return DropdownButtonFormField<String>(
+                    value: _selectedDramaId.isNotEmpty && dramas.any((d) => d.id == _selectedDramaId)
+                        ? _selectedDramaId
+                        : null,
+                    decoration: _inputDecoration('Select Drama'),
+                    dropdownColor: const Color(0xFF1A1A2E),
+                    items: dramas
+                        .map((d) => DropdownMenuItem(value: d.id, child: Text(d.title)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedDramaId = v ?? ''),
+                  );
+                }),
+                if (_selectedType == 'new_episode') ...[
+                  _fieldLabel('Episode Number (optional)'),
+                  TextField(
+                    controller: _episodeCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: _inputDecoration('Episode Number', hint: 'e.g. 5'),
+                  ),
+                ],
+              ],
+
+              // ── Publish ──
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: _saving ? null : _save,
+                  icon: _saving
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.publish_rounded),
+                  label: Text(_saving ? 'Publishing...' : 'Publish Announcement'),
+                ),
+              ),
+
+              // ── Status info ──
+              if (raw is Map<String, dynamic>) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      (raw['enabled'] as bool? ?? false) ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                      size: 16,
+                      color: (raw['enabled'] as bool? ?? false) ? Colors.green : Colors.grey,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        (raw['enabled'] as bool? ?? false)
+                            ? 'Announcement "${raw['id']}" is live'
+                            : 'No active announcement',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: (raw['enabled'] as bool? ?? false) ? Colors.green.shade700 : Colors.grey.shade500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
