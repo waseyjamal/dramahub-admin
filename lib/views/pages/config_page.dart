@@ -729,7 +729,7 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
 
   Map<String, dynamic> _currentMap() {
     final raw = widget.controller.config['fallback_update'];
-    return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+                return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
   }
 
   Future<void> _updateMap(Map<String, dynamic> updated) async {
@@ -1244,7 +1244,14 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   DropdownMenuItem(value: 'new_drama', child: Text('New Drama')),
                   DropdownMenuItem(value: 'new_episode', child: Text('New Episode')),
                 ],
-                onChanged: (v) => setState(() => _selectedType = v ?? 'general'),
+                onChanged: (v) => setState(() {
+                  _selectedType = v ?? 'general';
+                  _selectedDramaId = '';
+                  _titleCtrl.clear();
+                  _messageCtrl.clear();
+                  _imageCtrl.clear();
+                  _episodeCtrl.clear();
+                }),
               ),
 
               // ── Show Once ──
@@ -1300,7 +1307,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   decoration: _inputDecoration('URL', hint: 'https://, http://, or tg://'),
                 ),
               ] else ...[
-                _fieldLabel('Drama (optional)'),
+                _fieldLabel('Drama (auto-fills title, image & episode)'),
                 Obx(() {
                   final dramas = Get.find<DramaController>().dramas;
                   return DropdownButtonFormField<String>(
@@ -1311,7 +1318,25 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                     items: dramas
                         .map((d) => DropdownMenuItem(value: d['id'] as String?, child: Text(d['title'] as String? ?? '')))
                         .toList(),
-                    onChanged: (v) => setState(() => _selectedDramaId = v ?? ''),
+                    onChanged: (v) {
+                      setState(() => _selectedDramaId = v ?? '');
+                      if (v == null || v.isEmpty) return;
+                      final dramas = Get.find<DramaController>().dramas;
+                      final drama = dramas.firstWhereOrNull((d) => d['id'] == v);
+                      if (drama == null) return;
+                      final title = drama['title'] as String? ?? '';
+                      final banner = drama['bannerImage'] as String? ?? '';
+                      _imageCtrl.text = banner;
+                      if (_selectedType == 'new_drama') {
+                        _titleCtrl.text = title;
+                      } else if (_selectedType == 'new_episode') {
+                        final ep = drama['latest_episode_number'];
+                        final epNum = ep?.toString() ?? '';
+                        _titleCtrl.text = 'New Episode • $title';
+                        _messageCtrl.text = 'Episode $epNum of $title is now available! Watch now.';
+                        if (epNum.isNotEmpty) _episodeCtrl.text = epNum;
+                      }
+                    },
                   );
                 }),
                 if (_selectedType == 'new_episode') ...[
