@@ -12,7 +12,7 @@ class StorageService {
   final SessionStorage _sessionStorage = SessionStorage();
 
   static const _saltPrefix = 'dramahub_';
-  static const int _patExpiryDays = 10;
+  static const int _patExpiryDays = 90;
 
   Future<void> init() async {
     await _storage.ready;
@@ -65,8 +65,6 @@ class StorageService {
 
   Future<void> saveSession(bool isLoggedIn) async {
     _sessionStorage.saveSession(isLoggedIn);
-    // On mobile, we still keep a shadow copy in localStorage if needed for specific logic,
-    // but the source of truth is now the conditional sessionStorage/in-memory flag.
     if (!kIsWeb) {
       await _storage.setItem(StorageKeys.session, isLoggedIn);
     }
@@ -121,7 +119,6 @@ class StorageService {
     final iv = enc.IV.fromSecureRandom(16);
     final encrypter = enc.Encrypter(enc.AES(key));
     final encrypted = encrypter.encrypt(text, iv: iv);
-    // Prepend IV to ciphertext so we can extract it during decryption
     final ivAndCipher = '${iv.base64}:${encrypted.base64}';
     return ivAndCipher;
   }
@@ -129,7 +126,6 @@ class StorageService {
   String _decrypt(String encrypted, String password) {
     final keyBytes = _deriveKeyBytes(password, _saltPrefix);
     final key = enc.Key(keyBytes);
-    // Split IV and ciphertext
     final parts = encrypted.split(':');
     if (parts.length != 2) throw Exception('Invalid encrypted format');
     final iv = enc.IV.fromBase64(parts[0]);
@@ -143,7 +139,7 @@ class StorageService {
     pbkdf2.init(
       Pbkdf2Parameters(
         Uint8List.fromList(utf8.encode(salt)),
-        100000,
+        10000,
         32,
       ),
     );
