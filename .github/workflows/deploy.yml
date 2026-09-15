@@ -1,11 +1,14 @@
-name: Build & Deploy to Cloudflare
+name: Deploy to Cloudflare
 
 on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,13 +17,14 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
+          cache: true
 
-      - name: Build web
-        run: flutter build web --release --base-href /
+      - run: flutter pub get
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - run: flutter build web --release --base-href /
+
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
-          force_orphan: false
+          force_orphan: true
