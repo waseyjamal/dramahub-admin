@@ -1179,6 +1179,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
         fillColor: Colors.grey.shade900,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         labelStyle: const TextStyle(color: Colors.teal),
+        hintStyle: const TextStyle(color: Colors.white38),
       );
 
   Widget _fieldLabel(String text) => Padding(
@@ -1262,7 +1263,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
               _fieldLabel('Announcement ID (required — change to re-trigger)'),
               Row(
                 children: [
-                  Expanded(child: TextField(controller: _idCtrl, decoration: _inputDecoration('ID', hint: 'ann_1234567890'))),
+                  Expanded(child: TextField(controller: _idCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('ID', hint: 'ann_1234567890'))),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800),
@@ -1274,26 +1275,28 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
 
               // ── Optional Content ──
               _fieldLabel('Title (optional)'),
-              TextField(controller: _titleCtrl, decoration: _inputDecoration('Title')),
+              TextField(controller: _titleCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Title')),
 
               _fieldLabel('Message (optional)'),
               TextField(
                 controller: _messageCtrl,
                 maxLines: 4,
+                style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration('Message', hint: 'Supports emojis and line breaks'),
               ),
 
               _fieldLabel('Banner Image URL (optional)'),
-              TextField(controller: _imageCtrl, decoration: _inputDecoration('Image URL')),
+              TextField(controller: _imageCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Image URL')),
 
               _fieldLabel('Button Label (optional)'),
-              TextField(controller: _actionLabelCtrl, decoration: _inputDecoration('Button Label', hint: 'e.g. Join Telegram')),
+              TextField(controller: _actionLabelCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Button Label', hint: 'e.g. Join Telegram')),
 
               // ── Type-specific action fields ──
               if (_selectedType == 'general') ...[
                 _fieldLabel('Button URL (optional — General type only)'),
                 TextField(
                   controller: _actionUrlCtrl,
+                  style: const TextStyle(color: Colors.white),
                   decoration: _inputDecoration('URL', hint: 'https://, http://, or tg://'),
                 ),
               ] else ...[
@@ -1316,6 +1319,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   TextField(
                     controller: _episodeCtrl,
                     keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
                     decoration: _inputDecoration('Episode Number', hint: 'e.g. 5'),
                   ),
                 ],
