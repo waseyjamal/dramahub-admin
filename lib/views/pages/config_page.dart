@@ -729,7 +729,7 @@ class _FallbackUpdateCardState extends State<_FallbackUpdateCard> {
 
   Map<String, dynamic> _currentMap() {
     final raw = widget.controller.config['fallback_update'];
-                return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
   }
 
   Future<void> _updateMap(Map<String, dynamic> updated) async {
@@ -1139,7 +1139,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
       'show_once': _showOnce,
     };
     if (_titleCtrl.text.trim().isNotEmpty) map['title'] = _titleCtrl.text.trim();
-    if (_messageCtrl.text.trim().isNotEmpty) map['message'] = _messageCtrl.text.trim();
+    if (_messageCtrl.text.trim().isNotEmpty) map['message'] = _messageCtrl.text.trim().replaceAll(r'\n', '\n');
     if (_imageCtrl.text.trim().isNotEmpty) map['image_url'] = _imageCtrl.text.trim();
     if (_actionLabelCtrl.text.trim().isNotEmpty) map['action_label'] = _actionLabelCtrl.text.trim();
     if (_selectedType == 'general') {
@@ -1244,14 +1244,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   DropdownMenuItem(value: 'new_drama', child: Text('New Drama')),
                   DropdownMenuItem(value: 'new_episode', child: Text('New Episode')),
                 ],
-                onChanged: (v) => setState(() {
-                  _selectedType = v ?? 'general';
-                  _selectedDramaId = '';
-                  _titleCtrl.clear();
-                  _messageCtrl.clear();
-                  _imageCtrl.clear();
-                  _episodeCtrl.clear();
-                }),
+                onChanged: (v) => setState(() => _selectedType = v ?? 'general'),
               ),
 
               // ── Show Once ──
@@ -1289,7 +1282,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                 controller: _messageCtrl,
                 maxLines: 4,
                 style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Message', hint: 'Supports emojis and line breaks'),
+                decoration: _inputDecoration('Message', hint: 'Use \\n for line breaks, emojis supported'),
               ),
 
               _fieldLabel('Banner Image URL (optional)'),
@@ -1307,7 +1300,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   decoration: _inputDecoration('URL', hint: 'https://, http://, or tg://'),
                 ),
               ] else ...[
-                _fieldLabel('Drama (auto-fills title, image & episode)'),
+                _fieldLabel('Drama (optional)'),
                 Obx(() {
                   final dramas = Get.find<DramaController>().dramas;
                   return DropdownButtonFormField<String>(
