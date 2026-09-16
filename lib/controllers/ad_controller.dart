@@ -89,6 +89,8 @@ class AdController extends GetxController {
   final RxBool nativeEnabled = false.obs;
   final RxInt nativeEveryNthCard = 5.obs;
   final nativeAdUnitId = TextEditingController();
+  final RxString nativeProvider = 'levelplay'.obs;
+  final RxInt sessionResetMinutes = 90.obs;
   final RxMap<String, bool> nativeScreens = <String, bool>{
     'home_screen': false,
     'episodes_screen': false,
@@ -152,6 +154,7 @@ class AdController extends GetxController {
       final json = data as Map<String, dynamic>;
 
       adsEnabled.value = json['ads_enabled'] ?? true;
+      sessionResetMinutes.value = json['session_reset_minutes'] ?? 90;
 
       // Ad Networks
       final adNetworks = json['ad_networks'] as Map<String, dynamic>? ?? {};
@@ -211,6 +214,7 @@ class AdController extends GetxController {
       nativeEnabled.value = nat['enabled'] ?? false;
       nativeEveryNthCard.value = nat['every_nth_card'] ?? 5;
       nativeAdUnitId.text = nat['ad_unit_id'] ?? '';
+      nativeProvider.value = nat['native_provider'] ?? 'levelplay';
       final natScreens = nat['screens'] as Map<String, dynamic>? ?? {};
       natScreens.forEach((k, v) {
         if (nativeScreens.containsKey(k)) {
@@ -275,6 +279,7 @@ class AdController extends GetxController {
 
       final data = {
         'ads_enabled': adsEnabled.value,
+        'session_reset_minutes': sessionResetMinutes.value,
         'ad_networks': {
           'levelplay_enabled': levelplayEnabled.value,
           // ✅ Saves yandex_enabled (NOT cas_enabled)
@@ -313,6 +318,7 @@ class AdController extends GetxController {
           'enabled': nativeEnabled.value,
           'every_nth_card': nativeEveryNthCard.value,
           'ad_unit_id': nativeAdUnitId.text.trim(),
+          'native_provider': nativeProvider.value,
           'screens': Map<String, bool>.from(nativeScreens),
         },
         'download': {

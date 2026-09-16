@@ -47,7 +47,9 @@ class AdManagerPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _GlobalKillSwitch(c: c),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                _SessionResetTile(c: c),
+                const SizedBox(height: 12),
                 _WaterfallStatusCard(c: c),
                 const SizedBox(height: 16),
                 _AdNetworksSection(c: c),
@@ -128,6 +130,30 @@ class _GlobalKillSwitch extends StatelessWidget {
   }
 }
 
+class _SessionResetTile extends StatelessWidget {
+  final AdController c;
+  const _SessionResetTile({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Obx(() => _SliderTile(
+            label: 'Session reset timer',
+            value: c.sessionResetMinutes.value.toDouble(),
+            min: 15, max: 180, divisions: 11,
+            displayText: '${c.sessionResetMinutes.value} min',
+            onChanged: (v) => c.sessionResetMinutes.value = v.round(),
+          )),
+    );
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AD NETWORKS SECTION
 // ✅ CAS.AI tile → Yandex tile
@@ -186,12 +212,11 @@ class _AdNetworksSection extends StatelessWidget {
                       onChanged: (v) => c.levelplayEnabled.value = v,
                     )),
                 const SizedBox(height: 8),
-                // ✅ CAS.AI → Yandex
                 Obx(() => _NetworkToggleTile(
-                      name: 'Yandex',
-                      subtitle: 'Yandex Easy Monetization network',
+                      name: 'Yandex (inactive)',
+                      subtitle: 'Yandex removed from app — toggle has no effect',
                       value: c.yandexEnabled.value,
-                      color: Colors.orange.shade700,
+                      color: Colors.grey,
                       onChanged: (v) => c.yandexEnabled.value = v,
                     )),
               ],
@@ -526,6 +551,13 @@ class _NativeSection extends StatelessWidget {
               min: 3, max: 10, divisions: 7,
               displayText: 'Every ${c.nativeEveryNthCard.value} cards',
               onChanged: (v) => c.nativeEveryNthCard.value = v.round(),
+            )),
+        const SizedBox(height: 12),
+        Obx(() => _DropdownTile(
+              label: 'Provider',
+              value: c.nativeProvider.value,
+              options: const ['levelplay'],
+              onChanged: (v) => c.nativeProvider.value = v!,
             )),
         const SizedBox(height: 12),
         _ScreenToggles(title: 'Show on screens:', screens: c.nativeScreens),
