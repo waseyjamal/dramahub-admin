@@ -1139,7 +1139,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
       'show_once': _showOnce,
     };
     if (_titleCtrl.text.trim().isNotEmpty) map['title'] = _titleCtrl.text.trim();
-    if (_messageCtrl.text.trim().isNotEmpty) map['message'] = _messageCtrl.text.trim();
+    if (_messageCtrl.text.trim().isNotEmpty) map['message'] = _messageCtrl.text.trim().replaceAll(r'\n', '\n');
     if (_imageCtrl.text.trim().isNotEmpty) map['image_url'] = _imageCtrl.text.trim();
     if (_actionLabelCtrl.text.trim().isNotEmpty) map['action_label'] = _actionLabelCtrl.text.trim();
     if (_selectedType == 'general') {
@@ -1179,6 +1179,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
         fillColor: Colors.grey.shade900,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         labelStyle: const TextStyle(color: Colors.teal),
+        hintStyle: const TextStyle(color: Colors.white38),
       );
 
   Widget _fieldLabel(String text) => Padding(
@@ -1238,7 +1239,6 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
               DropdownButtonFormField<String>(
                 value: _selectedType,
                 decoration: _inputDecoration('Type'),
-                dropdownColor: const Color(0xFF1A1A2E),
                 items: const [
                   DropdownMenuItem(value: 'general', child: Text('General')),
                   DropdownMenuItem(value: 'new_drama', child: Text('New Drama')),
@@ -1263,7 +1263,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
               _fieldLabel('Announcement ID (required — change to re-trigger)'),
               Row(
                 children: [
-                  Expanded(child: TextField(controller: _idCtrl, decoration: _inputDecoration('ID', hint: 'ann_1234567890'))),
+                  Expanded(child: TextField(controller: _idCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('ID', hint: 'ann_1234567890'))),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800),
@@ -1275,26 +1275,28 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
 
               // ── Optional Content ──
               _fieldLabel('Title (optional)'),
-              TextField(controller: _titleCtrl, decoration: _inputDecoration('Title')),
+              TextField(controller: _titleCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Title')),
 
               _fieldLabel('Message (optional)'),
               TextField(
                 controller: _messageCtrl,
                 maxLines: 4,
-                decoration: _inputDecoration('Message', hint: 'Supports emojis and line breaks'),
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('Message', hint: 'Use \\n for line breaks, emojis supported'),
               ),
 
               _fieldLabel('Banner Image URL (optional)'),
-              TextField(controller: _imageCtrl, decoration: _inputDecoration('Image URL')),
+              TextField(controller: _imageCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Image URL')),
 
               _fieldLabel('Button Label (optional)'),
-              TextField(controller: _actionLabelCtrl, decoration: _inputDecoration('Button Label', hint: 'e.g. Join Telegram')),
+              TextField(controller: _actionLabelCtrl, style: const TextStyle(color: Colors.white), decoration: _inputDecoration('Button Label', hint: 'e.g. Join Telegram')),
 
               // ── Type-specific action fields ──
               if (_selectedType == 'general') ...[
                 _fieldLabel('Button URL (optional — General type only)'),
                 TextField(
                   controller: _actionUrlCtrl,
+                  style: const TextStyle(color: Colors.white),
                   decoration: _inputDecoration('URL', hint: 'https://, http://, or tg://'),
                 ),
               ] else ...[
@@ -1306,11 +1308,28 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                         ? _selectedDramaId
                         : null,
                     decoration: _inputDecoration('Select Drama'),
-                    dropdownColor: const Color(0xFF1A1A2E),
                     items: dramas
                         .map((d) => DropdownMenuItem(value: d['id'] as String?, child: Text(d['title'] as String? ?? '')))
                         .toList(),
-                    onChanged: (v) => setState(() => _selectedDramaId = v ?? ''),
+                    onChanged: (v) {
+                      setState(() => _selectedDramaId = v ?? '');
+                      if (v == null || v.isEmpty) return;
+                      final dramas = Get.find<DramaController>().dramas;
+                      final drama = dramas.firstWhereOrNull((d) => d['id'] == v);
+                      if (drama == null) return;
+                      final title = drama['title'] as String? ?? '';
+                      final banner = drama['bannerImage'] as String? ?? '';
+                      _imageCtrl.text = banner;
+                      if (_selectedType == 'new_drama') {
+                        _titleCtrl.text = title;
+                      } else if (_selectedType == 'new_episode') {
+                        final ep = drama['latest_episode_number'];
+                        final epNum = ep?.toString() ?? '';
+                        _titleCtrl.text = 'New Episode • $title';
+                        _messageCtrl.text = 'Episode $epNum of $title is now available! Watch now.';
+                        if (epNum.isNotEmpty) _episodeCtrl.text = epNum;
+                      }
+                    },
                   );
                 }),
                 if (_selectedType == 'new_episode') ...[
@@ -1318,6 +1337,7 @@ class _AnnouncementCardState extends State<_AnnouncementCard> {
                   TextField(
                     controller: _episodeCtrl,
                     keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
                     decoration: _inputDecoration('Episode Number', hint: 'e.g. 5'),
                   ),
                 ],
