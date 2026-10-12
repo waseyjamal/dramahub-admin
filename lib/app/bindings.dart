@@ -11,6 +11,7 @@ import '../controllers/episode_controller.dart';
 import '../controllers/config_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import '../controllers/migration_controller.dart';
+import '../controllers/shorts_controller.dart';
 
 class AppBindings extends Bindings {
   @override
@@ -29,5 +30,6 @@ class AppBindings extends Bindings {
 
     Get.lazyPut<DashboardController>(() => DashboardController());
     Get.lazyPut<MigrationController>(() => MigrationController());
+    Get.lazyPut<ShortsController>(() => ShortsController(), fenix: true);
   }
 }

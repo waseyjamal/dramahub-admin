@@ -65,6 +65,7 @@ class AdController extends GetxController {
     'download_screen': false,
     'suggest_drama_screen': false,
     'report_problem_screen': false,
+    'shorts_feed': false,
   }.obs;
 
   // ─── Rewarded ─────────────────────────────────────────────────────
@@ -83,6 +84,7 @@ class AdController extends GetxController {
     'download_screen': false,
     'suggest_drama_screen': false,
     'report_problem_screen': false,
+    'shorts_unlock': false,
   }.obs;
 
   // ─── Native ───────────────────────────────────────────────────────

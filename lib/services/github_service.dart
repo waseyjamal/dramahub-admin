@@ -216,6 +216,27 @@ class GitHubService extends GetxService {
     }
   }
 
+  /// Lists file names in a repo folder. Returns [] if the folder doesn't exist.
+  Future<List<String>> listDirectory(String path) async {
+    try {
+      final response = await _dio.get(
+        ApiConstants.contentsUrl(path),
+        queryParameters: {'ref': ApiConstants.githubBranch},
+      );
+      final data = response.data;
+      if (data is! List) return [];
+      return data
+          .whereType<Map>()
+          .where((e) => e['type'] == 'file')
+          .map((e) => e['name'] as String)
+          .toList();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return [];
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
   void _handleDioError(DioException e) {
     if (e.response?.statusCode == 403 &&
         e.response?.data.toString().contains('rate limit') == true) {
