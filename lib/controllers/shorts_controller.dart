@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import '../core/exceptions/github_exception.dart';
 import '../data/repositories/github_repository.dart';
@@ -87,6 +89,7 @@ class ShortsController extends GetxController {
         }
       }
       series.assignAll(loaded);
+      await _resyncFeed();
     } catch (e) {
       errorMessage.value = 'Failed to load Shorts data: $e';
     } finally {
@@ -342,6 +345,9 @@ class ShortsController extends GetxController {
       'title': s['title'] ?? '',
       'description': s['description'] ?? '',
       'poster': s['poster'] ?? '',
+      if ((s['genre'] ?? '').toString().isNotEmpty) 'genre': s['genre'],
+      if (s['tags'] is List && (s['tags'] as List).isNotEmpty)
+        'tags': s['tags'],
       'totalEpisodes': s['totalEpisodes'] ?? eps.length,
       'episode': {
         for (final k in ['n', 'title', 'hls', 'mp4', 'thumb'])
@@ -363,6 +369,22 @@ class ShortsController extends GetxController {
       'totalEpisodes': eps.length,
       'episodes': eps,
     };
+  }
+
+  /// Rebuilds feed entries from their series files (keeps order) and saves
+  /// only if something changed — e.g. older entries missing genre/tags.
+  Future<void> _resyncFeed() async {
+    var changed = false;
+    for (var i = 0; i < feed.length; i++) {
+      final s = series[feed[i]['id']];
+      if (s == null) continue;
+      final entry = feedEntryFor(s);
+      if (jsonEncode(entry) != jsonEncode(feed[i])) {
+        feed[i] = entry;
+        changed = true;
+      }
+    }
+    if (changed) await _commitFeed('Shorts: resync feed entries');
   }
 
   Future<void> _commitFeed(String message) => _repository.commitJsonList(
