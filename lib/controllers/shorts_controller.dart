@@ -215,6 +215,7 @@ class ShortsController extends GetxController {
     return _guard(() async {
       final data = _normalized(s);
       final id = data['id'] as String;
+      if (isNew) data['updatedAt'] = _stamp();
       await _repository.commitJsonList(
         path: '$seriesDir/$id.json',
         data: data,
@@ -224,7 +225,7 @@ class ShortsController extends GetxController {
 
       final inFeed = isInFeed(id);
       if (inFeed || addToFeed) {
-        final entry = feedEntryFor(data);
+        final entry = _entry(data);
         final i = feed.indexWhere((e) => e['id'] == id);
         if (i >= 0) {
           feed[i] = entry;
@@ -248,7 +249,8 @@ class ShortsController extends GetxController {
       return false;
     }
     final eps = episodesOf(id);
-    final last = eps.fold<int>(0, (m, e) => (e['n'] as int) > m ? e['n'] as int : m);
+    final last =
+        eps.fold<int>(0, (m, e) => (e['n'] as int) > m ? e['n'] as int : m);
     if (upTo <= last) {
       errorMessage.value = 'Series already has $last episodes.';
       return false;
@@ -264,6 +266,7 @@ class ShortsController extends GetxController {
         thumbPattern: admin['thumbPattern'] as String? ?? '',
       ),
     ];
+    next['updatedAt'] = _stamp();
     return saveSeries(next, isNew: false);
   }
 
@@ -311,7 +314,7 @@ class ShortsController extends GetxController {
     if (s == null || isInFeed(id) == show) return true;
     return _guard(() async {
       if (show) {
-        feed.add(feedEntryFor(s));
+        feed.add(_entry(s));
       } else {
         feed.removeWhere((e) => e['id'] == id);
       }
@@ -332,14 +335,66 @@ class ShortsController extends GetxController {
     });
   }
 
+  /// Most parts of one series the app may rotate through in For You.
+  static const int feedPartsMax = 5;
+
+  static String _stamp() => DateTime.now().toUtc().toIso8601String();
+
+  /// [feedEntryFor] with the current Settings (free count, locking on/off).
+  Map<String, dynamic> _entry(Map<String, dynamic> s) => feedEntryFor(
+        s,
+        freeDefault: (config['free_episodes_default'] as num?)?.toInt() ?? 10,
+        lockEnabled: ads['rewarded_unlock_enabled'] != false,
+      );
+
+  /// Parts the app may show in For You: free episodes only (same rule the
+  /// app uses), at most [feedPartsMax], spread evenly, first and last kept.
+  static List<Map<String, dynamic>> _feedParts(
+    Map<String, dynamic> s,
+    List<Map> eps,
+    int freeDefault,
+    bool lockEnabled,
+  ) {
+    final free =
+        s['freeEpisodes'] is int ? s['freeEpisodes'] as int : freeDefault;
+    bool isOpen(Map e) {
+      if (!lockEnabled) return true;
+      final explicit = e['locked'];
+      if (explicit is bool) return !explicit;
+      return (e['n'] as int) <= free;
+    }
+
+    final open = eps.where(isOpen).toList();
+    final chosen = <Map>[];
+    if (open.length <= feedPartsMax) {
+      chosen.addAll(open);
+    } else {
+      for (var i = 0; i < feedPartsMax; i++) {
+        chosen.add(open[(i * (open.length - 1) / (feedPartsMax - 1)).round()]);
+      }
+    }
+    return [
+      for (final e in chosen)
+        {
+          for (final k in ['n', 'title', 'hls', 'mp4', 'thumb'])
+            if (e[k] != null) k: e[k],
+          if (e['locked'] is bool) 'locked': e['locked'],
+        },
+    ];
+  }
+
   /// The feed entry is always rebuilt from the series file (episode 1 =
   /// the hook), so title/poster/episode count never drift.
-  static Map<String, dynamic> feedEntryFor(Map<String, dynamic> s) {
-    final eps = ((s['episodes'] as List?) ?? const [])
-        .whereType<Map>()
-        .toList()
+  static Map<String, dynamic> feedEntryFor(
+    Map<String, dynamic> s, {
+    int freeDefault = 10,
+    bool lockEnabled = true,
+  }) {
+    final eps = ((s['episodes'] as List?) ?? const []).whereType<Map>().toList()
       ..sort((a, b) => (a['n'] as int).compareTo(b['n'] as int));
     final first = eps.isEmpty ? <String, dynamic>{} : eps.first;
+    final parts = _feedParts(s, eps, freeDefault, lockEnabled);
+    final updatedAt = s['updatedAt'];
     return {
       'id': s['id'],
       'title': s['title'] ?? '',
@@ -353,6 +408,11 @@ class ShortsController extends GetxController {
         for (final k in ['n', 'title', 'hls', 'mp4', 'thumb'])
           if (first[k] != null) k: first[k],
       },
+      if (s['freeEpisodes'] is int) 'freeEpisodes': s['freeEpisodes'],
+      if (updatedAt is String && updatedAt.isNotEmpty) 'updatedAt': updatedAt,
+      if (parts.length > 1 ||
+          (parts.length == 1 && parts.first['n'] != first['n']))
+        'feedEpisodes': parts,
     };
   }
 
@@ -378,7 +438,7 @@ class ShortsController extends GetxController {
     for (var i = 0; i < feed.length; i++) {
       final s = series[feed[i]['id']];
       if (s == null) continue;
-      final entry = feedEntryFor(s);
+      final entry = _entry(s);
       if (jsonEncode(entry) != jsonEncode(feed[i])) {
         feed[i] = entry;
         changed = true;
